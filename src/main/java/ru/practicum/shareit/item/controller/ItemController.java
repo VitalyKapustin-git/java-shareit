@@ -22,7 +22,7 @@ public class ItemController {
 
     @GetMapping
     public List<Item> getUserItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId) {
-        if(userId == null) throw new BadRequestException("Incorrect user id");
+        if (userId == null) throw new BadRequestException("Incorrect user id");
 
         return itemService.getAll(userId);
     }
@@ -44,8 +44,8 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public Item updateItem(@RequestBody ItemDto itemDto,
-                              @PathVariable long itemId,
-                              @RequestHeader(value = "X-Sharer-User-Id") Long userId) {
+                           @PathVariable long itemId,
+                           @RequestHeader(value = "X-Sharer-User-Id") Long userId) {
 
         return itemService.update(itemDto, itemId, userId);
     }

@@ -26,15 +26,15 @@ public class InMemoryItemRepository implements ItemRepository {
     @Override
     public Item create(ItemDto item, long userId) {
         itemMap.put(
-                    id,
-                    Item.builder()
-                            .id(id)
-                            .name(item.getName())
-                            .description(item.getDescription())
-                            .available(item.getAvailable())
-                            .ownerId(userId)
-                            .build()
-                );
+                id,
+                Item.builder()
+                        .id(id)
+                        .name(item.getName())
+                        .description(item.getDescription())
+                        .available(item.getAvailable())
+                        .ownerId(userId)
+                        .build()
+        );
 
         return itemMap.get(id++);
     }
@@ -46,13 +46,13 @@ public class InMemoryItemRepository implements ItemRepository {
         String newDescr = newItemDto.getDescription();
         Boolean newAvail = newItemDto.getAvailable();
 
-        if(userId != itemToUpdate.getOwnerId()) {
+        if (userId != itemToUpdate.getOwnerId()) {
             throw new NotOwnerException("You are not an author of the item post!!!");
         }
 
-        if(newName != null) itemToUpdate.setName(newName);
-        if(newDescr != null) itemToUpdate.setDescription(newDescr);
-        if(newAvail != null) itemToUpdate.setAvailable(newAvail);
+        if (newName != null) itemToUpdate.setName(newName);
+        if (newDescr != null) itemToUpdate.setDescription(newDescr);
+        if (newAvail != null) itemToUpdate.setAvailable(newAvail);
 
         return get(itemId);
     }
@@ -74,7 +74,7 @@ public class InMemoryItemRepository implements ItemRepository {
         if (!itemMap.containsKey(itemId)) throw new NotFoundException("item with id " + itemId);
 
         Item itemToRemove = itemMap.get(itemId);
-        if(userId != itemToRemove.getOwnerId()) {
+        if (userId != itemToRemove.getOwnerId()) {
             throw new NotOwnerException("You are not an author of the item post!!!");
         }
 

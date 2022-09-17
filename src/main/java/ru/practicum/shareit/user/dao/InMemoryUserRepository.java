@@ -26,14 +26,14 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public User create(UserDto user) {
         String email = user.getEmail();
-        if(users.values().stream().anyMatch(x -> x.getEmail().equals(email))) throw new EmailExistException(email);
+        if (users.values().stream().anyMatch(x -> x.getEmail().equals(email))) throw new EmailExistException(email);
 
         users.put(id, User.builder()
-                            .id(id)
-                            .name(user.getName())
-                            .email(user.getEmail())
-                            .build()
-                );
+                .id(id)
+                .name(user.getName())
+                .email(user.getEmail())
+                .build()
+        );
 
         return users.get(id++);
     }
@@ -45,19 +45,19 @@ public class InMemoryUserRepository implements UserRepository {
         String name = userDto.getName();
         String email = userDto.getEmail();
 
-        if(users.values().stream().anyMatch(x -> x.getEmail().equals(email))) {
+        if (users.values().stream().anyMatch(x -> x.getEmail().equals(email))) {
             throw new EmailExistException(email);
         }
 
-        if(name != null) existingUser.setName(name);
-        if(email != null) existingUser.setEmail(email);
+        if (name != null) existingUser.setName(name);
+        if (email != null) existingUser.setEmail(email);
 
         return users.get(userId);
     }
 
     @Override
     public User get(long userId) {
-        if(!users.containsKey(userId)) {
+        if (!users.containsKey(userId)) {
             throw new NotFoundException("user with id = " + userId);
         }
 
