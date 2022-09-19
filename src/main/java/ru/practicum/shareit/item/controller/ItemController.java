@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.core.exceptions.BadRequestException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
@@ -13,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/items")
 public class ItemController {
-    ItemService itemService;
+    private final ItemService itemService;
 
     @Autowired
     ItemController(ItemService itemService) {
@@ -22,8 +21,6 @@ public class ItemController {
 
     @GetMapping
     public List<Item> getUserItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId) {
-        if (userId == null) throw new BadRequestException("Incorrect user id");
-
         return itemService.getAll(userId);
     }
 

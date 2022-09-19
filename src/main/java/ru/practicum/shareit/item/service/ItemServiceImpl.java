@@ -16,8 +16,8 @@ import java.util.List;
 @Slf4j
 public class ItemServiceImpl implements ItemService {
 
-    ItemRepository itemRepository;
-    UserService userService;
+    private final ItemRepository itemRepository;
+    private final UserService userService;
 
     @Autowired
     ItemServiceImpl(ItemRepository itemRepository, UserService userService) {
