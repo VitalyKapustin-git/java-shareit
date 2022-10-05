@@ -10,14 +10,19 @@ import javax.validation.constraints.NotNull;
 @Data
 @AllArgsConstructor
 public class ItemDto {
+
+    long id;
+
     @NotNull
     @NotBlank
     private String name;
+
     @NotNull
     @NotBlank
     private String description;
+
     @NotNull
     @JsonProperty("available")
     private Boolean available;
-//    private Long request;
+
 }

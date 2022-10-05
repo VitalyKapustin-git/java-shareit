@@ -4,11 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.core.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mappers.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
+import javax.transaction.Transactional;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Primary
@@ -22,37 +26,50 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User create(UserDto userDto) {
-        log.info("[USER_SERVICE] Creating user -> {}", userDto);
+    @Transactional
+    public UserDto create(UserDto userDto) {
 
-        return userRepository.create(userDto);
+        // Проверка уникальности почты реализована на уровне БД
+//        if (users.values().stream().anyMatch(x -> x.getEmail().equals(email))) throw new EmailExistException(email);
+
+        log.info("[USER_SERVICE] Creating user -> {}", userDto);
+//        userRepository.save(UserMapper.fromUserDto(userDto));
+
+        return UserMapper.toUserDto(userRepository.save(UserMapper.fromUserDto(userDto)));
     }
 
     @Override
-    public User update(long userId, UserDto userDto) {
+    public UserDto update(long userId, UserDto userDto) {
         log.info("[USER_SERVICE] Trying to update user...");
 
-        return userRepository.update(userId, userDto);
+        User oldUser = userRepository.getUserById(userId);
+
+        if(userDto.getEmail() != null) oldUser.setEmail(userDto.getEmail());
+        if(userDto.getName() != null) oldUser.setName(userDto.getName());
+
+        return UserMapper.toUserDto(userRepository.save(oldUser));
     }
 
     @Override
-    public User get(long userId) {
+    public UserDto get(long userId) {
         log.info("[USER_SERVICE] Get user via id = {}", userId);
+        if(userRepository.getUserById(userId) == null) throw new NotFoundException("userId: " + userId);
 
-        return userRepository.get(userId);
+        return UserMapper.toUserDto(userRepository.getUserById(userId));
     }
 
     @Override
-    public List<User> getAll() {
+    public List<UserDto> getAll() {
         log.info("[USER_SERVICE] Collect info about all users...");
 
-        return userRepository.getAll();
+        return userRepository.findAll().stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 
     @Override
+    @Transactional
     public void remove(long userId) {
         log.info("[USER_SERVICE] Removing user with id = {}", userId);
 
-        userRepository.remove(userId);
+        userRepository.removeUserById(userId);
     }
 }
