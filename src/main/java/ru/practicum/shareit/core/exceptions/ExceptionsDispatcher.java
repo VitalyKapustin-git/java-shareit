@@ -20,7 +20,7 @@ public class ExceptionsDispatcher {
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> badRequest(BadRequestException e) {
-        return Map.of("Bad request: ", e.getMessage());
+        return Map.of("error", e.getMessage());
     }
 
     @ExceptionHandler(NotFoundException.class)

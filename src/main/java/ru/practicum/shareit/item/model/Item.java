@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-//@Builder
+@Builder
 @Entity
 @Table(name = "items")
 @NoArgsConstructor
@@ -27,5 +27,9 @@ public class Item {
     @NotNull
     @Column(name = "is_available")
     private boolean available;
+
+    @NotNull
+    @Column(name = "owner_id")
+    private long ownerId;
 
 }
