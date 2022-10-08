@@ -29,11 +29,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto create(UserDto userDto) {
 
-        // Проверка уникальности почты реализована на уровне БД
-//        if (users.values().stream().anyMatch(x -> x.getEmail().equals(email))) throw new EmailExistException(email);
-
         log.info("[USER_SERVICE] Creating user -> {}", userDto);
-//        userRepository.save(UserMapper.fromUserDto(userDto));
 
         return UserMapper.toUserDto(userRepository.save(UserMapper.fromUserDto(userDto)));
     }
@@ -44,8 +40,8 @@ public class UserServiceImpl implements UserService {
 
         User oldUser = userRepository.getUserById(userId);
 
-        if(userDto.getEmail() != null) oldUser.setEmail(userDto.getEmail());
-        if(userDto.getName() != null) oldUser.setName(userDto.getName());
+        if (userDto.getEmail() != null) oldUser.setEmail(userDto.getEmail());
+        if (userDto.getName() != null) oldUser.setName(userDto.getName());
 
         return UserMapper.toUserDto(userRepository.save(oldUser));
     }
@@ -53,7 +49,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto get(long userId) {
         log.info("[USER_SERVICE] Get user via id = {}", userId);
-        if(userRepository.getUserById(userId) == null) throw new NotFoundException("userId: " + userId);
+        if (userRepository.getUserById(userId) == null) throw new NotFoundException("userId: " + userId);
 
         return UserMapper.toUserDto(userRepository.getUserById(userId));
     }

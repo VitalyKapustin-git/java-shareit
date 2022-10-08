@@ -57,8 +57,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     // ---
 
 
-
-
 //    List<Booking> findByBookerIdAndEndIsBefore(Long bookerId, LocalDateTime end, Sort sort);
 
 }

@@ -78,9 +78,9 @@ public class ItemServiceImpl implements ItemService {
         String newDesr = itemDto.getDescription();
         Boolean newAvail = itemDto.getAvailable();
 
-        if(newName != null) oldItem.setName(newName);
-        if(newDesr != null) oldItem.setDescription(newDesr);
-        if(newAvail != null) oldItem.setAvailable(newAvail);
+        if (newName != null) oldItem.setName(newName);
+        if (newDesr != null) oldItem.setDescription(newDesr);
+        if (newAvail != null) oldItem.setAvailable(newAvail);
 
         return ItemMapper.toItemDto(itemRepository.save(oldItem));
     }
@@ -88,13 +88,13 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemWithBookingDto get(long itemId, long userId) {
         log.info("[ITEM_SERVICE] Getting item with id {}", itemId);
-        if(itemRepository.getItemById(itemId) == null) throw new NotFoundException("itemId: " + itemId);
+        if (itemRepository.getItemById(itemId) == null) throw new NotFoundException("itemId: " + itemId);
 
         Booking lastBookingDate = null;
         Booking nextBookingDate = null;
 
         // Если пользователь - владелец вещи, то вывести информацию по брони
-        if(userId == itemRepository.getItemById(itemId).getOwnerId()) {
+        if (userId == itemRepository.getItemById(itemId).getOwnerId()) {
 
             /*
                 Берем все брони для вещи, фильтруем по дате окончания брони, чтобы выяснить какие

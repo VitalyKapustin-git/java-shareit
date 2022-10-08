@@ -34,11 +34,9 @@ public class Booking {
     private LocalDateTime end;
 
     @Column(name = "item_id")
-//    @JsonProperty("item.id")
     private long itemId;
 
     @Column(name = "booker_id")
-//    @JsonProperty("booker.id")
     private long bookerId;
 
     @Column(name = "approve_status")

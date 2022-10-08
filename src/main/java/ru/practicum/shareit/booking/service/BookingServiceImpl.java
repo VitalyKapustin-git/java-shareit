@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Service
 @Primary
 @Slf4j
-public class BookingServiceImpl implements BookingService{
+public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
 
@@ -48,10 +48,10 @@ public class BookingServiceImpl implements BookingService{
     public BookingDto getBooking(long bookingId, long userId) {
         Booking booking = bookingRepository.getBookingById(bookingId);
 
-        if(booking == null) throw new NotFoundException("bookingId: " + bookingId);
+        if (booking == null) throw new NotFoundException("bookingId: " + bookingId);
 
         // Может быть выполнено либо автором бронирования, либо владельцем вещи
-        if(booking.getBookerId() != userId && itemRepository.getItemById(booking.getId()).getOwnerId() != userId)
+        if (booking.getBookerId() != userId && itemRepository.getItemById(booking.getId()).getOwnerId() != userId)
             throw new NotFoundException("any booking for userId: " + userId);
 
         return bookingMapper.toBookingDto(booking);
@@ -60,7 +60,7 @@ public class BookingServiceImpl implements BookingService{
     @Override
     public List<BookingDto> getAllBookings(String status, long bookerId) {
 
-        if(userRepository.getUserById(bookerId) == null) throw new NotFoundException("Not found user.");
+        if (userRepository.getUserById(bookerId) == null) throw new NotFoundException("Not found user.");
         BookingStatus bookingStatus = bookingStatusValidation(status);
 
         List<Booking> allBookings = List.of();
@@ -73,10 +73,10 @@ public class BookingServiceImpl implements BookingService{
                 allBookings = bookingRepository.getPastBookings(bookerId);
                 break;
             case "FUTURE":
-                allBookings =  bookingRepository.getFutureBookings(bookerId);
+                allBookings = bookingRepository.getFutureBookings(bookerId);
                 break;
             case "WAITING":
-                allBookings =  bookingRepository.getWaitingBookings(bookerId);
+                allBookings = bookingRepository.getWaitingBookings(bookerId);
                 break;
             case "REJECTED":
                 allBookings = bookingRepository.getRejectedBookings(bookerId);
@@ -109,10 +109,10 @@ public class BookingServiceImpl implements BookingService{
                 allBookings = bookingRepository.getPastOwnerBookings(userItems);
                 break;
             case "FUTURE":
-                allBookings =  bookingRepository.getFutureOwnerBookings(userItems);
+                allBookings = bookingRepository.getFutureOwnerBookings(userItems);
                 break;
             case "WAITING":
-                allBookings =  bookingRepository.getWaitingOwnerBookings(userItems);
+                allBookings = bookingRepository.getWaitingOwnerBookings(userItems);
                 break;
             case "REJECTED":
                 allBookings = bookingRepository.getRejectedOwnerBookings(userItems);
@@ -138,16 +138,16 @@ public class BookingServiceImpl implements BookingService{
 
         Item itemForBooking = itemRepository.getItemById(booking.getItemId());
 
-        if(userRepository.getUserById(bookerId) == null) throw new NotFoundException("Not found user.");
-        if(itemForBooking == null) throw new NotFoundException("Not found item for booking.");
-        if(!itemForBooking.isAvailable()) throw new BadRequestException("Item not available!");
-        if(booking.getEnd().isBefore(booking.getStart()))
+        if (userRepository.getUserById(bookerId) == null) throw new NotFoundException("Not found user.");
+        if (itemForBooking == null) throw new NotFoundException("Not found item for booking.");
+        if (!itemForBooking.isAvailable()) throw new BadRequestException("Item not available!");
+        if (booking.getEnd().isBefore(booking.getStart()))
             throw new BadRequestException("End of booking could not be before start.");
-        if(booking.getStart().isBefore(LocalDateTime.now()) || booking.getEnd().isBefore(LocalDateTime.now()))
+        if (booking.getStart().isBefore(LocalDateTime.now()) || booking.getEnd().isBefore(LocalDateTime.now()))
             throw new BadRequestException("Start and end of booking could not be in the past.");
-        if(bookingRepository.getCrossBookingsForItem(booking.getStart(), booking.getItemId()).size() > 0)
+        if (bookingRepository.getCrossBookingsForItem(booking.getStart(), booking.getItemId()).size() > 0)
             throw new BadRequestException("Already booked item with id: " + booking.getItemId());
-        if(itemForBooking.getOwnerId() == bookerId)
+        if (itemForBooking.getOwnerId() == bookerId)
             throw new NotFoundException("User could not book own item:  " + booking.getItemId());
 
         log.info("Trying to create booking -> {}", booking);
@@ -163,7 +163,7 @@ public class BookingServiceImpl implements BookingService{
 
         Booking booking = bookingRepository.getBookingById(bookingId);
 
-        if(booking.getBookingApproved().equals("APPROVED"))
+        if (booking.getBookingApproved().equals("APPROVED"))
             throw new BadRequestException("No any not approved bookings for userId: " + userId);
 
         // Если пользователь меняющий статус (userId) не владелец вещи, то отказ

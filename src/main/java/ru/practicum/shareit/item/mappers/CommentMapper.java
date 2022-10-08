@@ -15,9 +15,9 @@ public class CommentMapper {
     private final UserRepository userRepository;
 
     @Autowired
-    CommentMapper (ItemRepository itemRepository, UserRepository userRepository) {
-          this.itemRepository = itemRepository;
-          this.userRepository = userRepository;
+    CommentMapper(ItemRepository itemRepository, UserRepository userRepository) {
+        this.itemRepository = itemRepository;
+        this.userRepository = userRepository;
     }
 
     public CommentDto toCommentDto(Comment comment) {
