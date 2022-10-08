@@ -7,6 +7,7 @@ import ru.practicum.shareit.booking.model.Booking;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -30,5 +31,7 @@ public class ItemWithBookingDto {
     Booking lastBooking;
 
     Booking nextBooking;
+
+    List<CommentDto> comments;
 
 }

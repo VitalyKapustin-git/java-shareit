@@ -6,26 +6,25 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.core.exceptions.BadRequestException;
 import ru.practicum.shareit.core.exceptions.NotFoundException;
+import ru.practicum.shareit.item.dao.CommentRepository;
 import ru.practicum.shareit.item.dao.ItemRepository;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.exceptions.NotOwnerException;
+import ru.practicum.shareit.item.mappers.CommentMapper;
 import ru.practicum.shareit.item.mappers.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.transaction.Transactional;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 
 @Service
 @Primary
@@ -37,11 +36,21 @@ public class ItemServiceImpl implements ItemService {
 
     private final BookingRepository bookingRepository;
 
+    private final CommentRepository commentRepository;
+
+    private final CommentMapper commentMapper;
+
     @Autowired
-    ItemServiceImpl(ItemRepository itemRepository, UserService userService, BookingRepository bookingRepository) {
+    ItemServiceImpl(ItemRepository itemRepository,
+                    UserService userService,
+                    BookingRepository bookingRepository,
+                    CommentRepository commentRepository,
+                    CommentMapper commentMapper) {
         this.itemRepository = itemRepository;
         this.userService = userService;
         this.bookingRepository = bookingRepository;
+        this.commentRepository = commentRepository;
+        this.commentMapper = commentMapper;
     }
 
     @Transactional
@@ -108,11 +117,17 @@ public class ItemServiceImpl implements ItemService {
             */
             nextBookingDate = bookingRepository.getBookingsByItemId(itemId).stream()
                     .filter(x -> x.getStart().isAfter(LocalDateTime.now()))
-                    .min((x1, x2) -> x1.getStart().isBefore(x2.getStart()) ? 1 : 0)
+                    .min((x1, x2) -> x1.getStart().isBefore(x2.getStart()) ? 0 : 1)
                     .orElse(null);
         }
 
-        return ItemMapper.toItemBookingDto(itemRepository.getItemById(itemId), lastBookingDate, nextBookingDate);
+        return ItemMapper.toItemBookingDto(itemRepository.getItemById(itemId),
+                lastBookingDate,
+                nextBookingDate,
+                commentRepository.getAllItemComments(itemId).stream()
+                        .map(commentMapper::toCommentDto)
+                        .collect(Collectors.toList())
+        );
     }
 
     @Override
@@ -148,4 +163,25 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.findByText(text).stream()
                 .map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
+
+    @Override
+    public CommentDto addComment(long itemId, long userId, Comment comment) {
+
+        if (comment.getText().isBlank()) throw new BadRequestException("comment couldn't be empty.");
+
+        long bookingsNumber = bookingRepository.getPastBookings(userId).stream()
+                .filter(x -> x.getItemId() == itemId)
+                .count();
+
+        if (bookingsNumber == 0) throw new BadRequestException("you must use booked item" +
+                " for full item before leave comment");
+
+        comment.setItemId(itemId);
+        comment.setAuthorId(userId);
+
+        commentRepository.save(comment);
+
+        return commentMapper.toCommentDto(comment);
+    }
+
 }
