@@ -1,12 +1,9 @@
 package ru.practicum.shareit.booking.controller;
 
-import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.core.exceptions.BadRequestException;
 
 import java.util.List;
 
@@ -17,23 +14,12 @@ import java.util.List;
 @RequestMapping(path = "/bookings")
 public class BookingController {
 
-    private BookingService bookingService;
+    private final BookingService bookingService;
 
     BookingController(BookingService bookingService) {
         this.bookingService = bookingService;
     }
 
-
-    /*TODO Проверка при создании, существует ли пользователь
-      TODO Проверка при создании, cуществует ли item
-      TODO Проверка при создании, что конец брони не раньше старта
-      TODO Проверка при создании, что конец брони не в прошлом
-      TODO Проверка при создании, что старт брони не в прошлом
-
-      TODO Проверка при запросе брони, что существует (404)
-      TODO Проверка при запросе брони по id на создателя брони и запрашивающего (должен быть один и тот же)
-
-     */
     @GetMapping("/{bookingId}")
     public BookingDto getBooking(@PathVariable long bookingId,
                                  @RequestHeader("X-Sharer-User-Id") long bookerId) {
@@ -71,6 +57,5 @@ public class BookingController {
     public List<Booking> getAllBookingsForItem(@PathVariable long itemId) {
         return bookingService.getAllBookingsForItem(itemId);
     }
-
 
 }
