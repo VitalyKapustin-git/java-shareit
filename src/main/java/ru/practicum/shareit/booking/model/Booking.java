@@ -1,8 +1,7 @@
 package ru.practicum.shareit.booking.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -13,8 +12,7 @@ import java.time.LocalDateTime;
  */
 
 @Entity
-@Getter
-@Setter
+@Data
 @Table(name = "bookings")
 public class Booking {
 

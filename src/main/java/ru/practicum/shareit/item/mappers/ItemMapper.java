@@ -10,41 +10,36 @@ import java.util.List;
 
 public class ItemMapper {
 
-
     public static ItemDto toItemDto(Item item) {
-        return new ItemDto(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.isAvailable(),
-                item.getOwnerId()
-        );
+
+        ItemDto itemDto = new ItemDto();
+
+        itemDto.setId(item.getId());
+        itemDto.setName(item.getName());
+        itemDto.setDescription(item.getDescription());
+        itemDto.setAvailable(item.getAvailable());
+        itemDto.setOwnerId(item.getOwnerId());
+
+        return itemDto;
     }
 
     public static ItemWithBookingDto toItemBookingDto(Item item,
                                                       Booking lastBooking,
                                                       Booking nextBooking,
                                                       List<CommentDto> comments) {
-        return new ItemWithBookingDto(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.isAvailable(),
-                item.getOwnerId(),
-                lastBooking,
-                nextBooking,
-                comments
-        );
-    }
 
-    public static Item toItem(ItemDto itemDto) {
-        return new Item(
-                itemDto.getId(),
-                itemDto.getName(),
-                itemDto.getDescription(),
-                itemDto.getAvailable(),
-                itemDto.getOwnerId()
-        );
+        ItemWithBookingDto itemWithBookingDto = new ItemWithBookingDto();
+
+        itemWithBookingDto.setId(item.getId());
+        itemWithBookingDto.setName(item.getName());
+        itemWithBookingDto.setDescription(item.getDescription());
+        itemWithBookingDto.setAvailable(item.getAvailable());
+        itemWithBookingDto.setOwnerId(item.getOwnerId());
+        itemWithBookingDto.setLastBooking(lastBooking);
+        itemWithBookingDto.setNextBooking(nextBooking);
+        itemWithBookingDto.setComments(comments);
+
+        return itemWithBookingDto;
     }
 
 }

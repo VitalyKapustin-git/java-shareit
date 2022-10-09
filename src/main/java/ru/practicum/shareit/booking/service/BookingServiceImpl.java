@@ -1,9 +1,10 @@
 package ru.practicum.shareit.booking.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
@@ -15,7 +16,6 @@ import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dao.UserRepository;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 @Primary
 @Slf4j
+@AllArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
@@ -33,17 +34,7 @@ public class BookingServiceImpl implements BookingService {
 
     private final BookingMapper bookingMapper;
 
-    @Autowired
-    BookingServiceImpl(BookingRepository bookingRepository,
-                       UserRepository userRepository,
-                       ItemRepository itemRepository,
-                       BookingMapper bookingMapper) {
-        this.bookingRepository = bookingRepository;
-        this.userRepository = userRepository;
-        this.itemRepository = itemRepository;
-        this.bookingMapper = bookingMapper;
-    }
-
+    @Transactional(readOnly = true)
     @Override
     public BookingDto getBooking(long bookingId, long userId) {
         Booking booking = bookingRepository.getBookingById(bookingId);
@@ -57,6 +48,7 @@ public class BookingServiceImpl implements BookingService {
         return bookingMapper.toBookingDto(booking);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<BookingDto> getAllBookings(String status, long bookerId) {
 
@@ -87,19 +79,18 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return allBookings.stream().map(bookingMapper::toBookingDto).collect(Collectors.toList());
-
     }
 
-    //TODO Найти все брони для вещей пользователя
+    @Transactional(readOnly = true)
     @Override
     public List<BookingDto> getOwnerBookings(String status, long bookerId) {
 
+        List<Booking> allBookings;
         List<Long> userItems = itemRepository.getAllUserItemsId(bookerId);
 
         if (userItems.size() == 0) throw new NotFoundException("No bookings for this owner");
 
         BookingStatus bookingStatus = bookingStatusValidation(status);
-        List<Booking> allBookings = List.of();
 
         switch (bookingStatus.toString()) {
             case "CURRENT":
@@ -120,12 +111,15 @@ public class BookingServiceImpl implements BookingService {
             case "ALL":
                 allBookings = bookingRepository.getBookingsByItemIdInOrderByStartDesc(userItems);
                 break;
+            default:
+                allBookings = List.of();
+                break;
         }
 
         return allBookings.stream().map(bookingMapper::toBookingDto).collect(Collectors.toList());
-
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Booking> getAllBookingsForItem(long itemId) {
         return bookingRepository.getBookingsByItemId(itemId);
@@ -134,13 +128,13 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public Booking createBooking(long bookerId, Booking booking) {
+    public BookingDto createBooking(long bookerId, Booking booking) {
 
         Item itemForBooking = itemRepository.getItemById(booking.getItemId());
 
         if (userRepository.getUserById(bookerId) == null) throw new NotFoundException("Not found user.");
         if (itemForBooking == null) throw new NotFoundException("Not found item for booking.");
-        if (!itemForBooking.isAvailable()) throw new BadRequestException("Item not available!");
+        if (!itemForBooking.getAvailable()) throw new BadRequestException("Item not available!");
         if (booking.getEnd().isBefore(booking.getStart()))
             throw new BadRequestException("End of booking could not be before start.");
         if (booking.getStart().isBefore(LocalDateTime.now()) || booking.getEnd().isBefore(LocalDateTime.now()))
@@ -151,10 +145,9 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("User could not book own item:  " + booking.getItemId());
 
         log.info("Trying to create booking -> {}", booking);
-
         booking.setBookerId(bookerId);
-        return bookingRepository.save(booking);
 
+        return bookingMapper.toBookingDto(bookingRepository.save(booking));
     }
 
     @Override
@@ -190,6 +183,5 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return bookingStatus;
-
     }
 }

@@ -1,39 +1,36 @@
 package ru.practicum.shareit.user.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.core.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mappers.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @Primary
 @Slf4j
+@AllArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
-    @Autowired
-    UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     @Override
     @Transactional
-    public UserDto create(UserDto userDto) {
+    public UserDto create(User user) {
 
-        log.info("[USER_SERVICE] Creating user -> {}", userDto);
+        log.info("[USER_SERVICE] Creating user -> {}", user);
 
-        return UserMapper.toUserDto(userRepository.save(UserMapper.fromUserDto(userDto)));
+        return UserMapper.toUserDto(userRepository.save(user));
     }
 
+    @Transactional
     @Override
     public UserDto update(long userId, UserDto userDto) {
         log.info("[USER_SERVICE] Trying to update user...");
@@ -46,6 +43,7 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(userRepository.save(oldUser));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserDto get(long userId) {
         log.info("[USER_SERVICE] Get user via id = {}", userId);
@@ -54,6 +52,7 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(userRepository.getUserById(userId));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserDto> getAll() {
         log.info("[USER_SERVICE] Collect info about all users...");

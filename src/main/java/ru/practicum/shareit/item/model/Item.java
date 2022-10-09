@@ -1,17 +1,16 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-@Builder
 @Entity
 @Table(name = "items")
 @NoArgsConstructor
-@AllArgsConstructor
 public class Item {
 
     @Id
@@ -26,7 +25,7 @@ public class Item {
 
     @NotNull
     @Column(name = "is_available")
-    private boolean available;
+    private Boolean available;
 
     @NotNull
     @Column(name = "owner_id")

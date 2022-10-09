@@ -1,9 +1,10 @@
 package ru.practicum.shareit.item.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.core.exceptions.BadRequestException;
@@ -20,7 +21,6 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.service.UserService;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @Service
 @Primary
 @Slf4j
+@AllArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
@@ -40,28 +41,15 @@ public class ItemServiceImpl implements ItemService {
 
     private final CommentMapper commentMapper;
 
-    @Autowired
-    ItemServiceImpl(ItemRepository itemRepository,
-                    UserService userService,
-                    BookingRepository bookingRepository,
-                    CommentRepository commentRepository,
-                    CommentMapper commentMapper) {
-        this.itemRepository = itemRepository;
-        this.userService = userService;
-        this.bookingRepository = bookingRepository;
-        this.commentRepository = commentRepository;
-        this.commentMapper = commentMapper;
-    }
-
     @Transactional
     @Override
-    public ItemDto create(ItemDto item, long userId) {
+    public ItemDto create(Item item, long userId) {
         log.info("[ITEM_SERVICE] Trying to create new item {}", item);
         // Проверка, существует ли пользователь
         userService.get(userId);
         item.setOwnerId(userId);
 
-        return ItemMapper.toItemDto(itemRepository.save(ItemMapper.toItem(item)));
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     @Transactional
@@ -85,6 +73,7 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toItemDto(itemRepository.save(oldItem));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ItemWithBookingDto get(long itemId, long userId) {
         log.info("[ITEM_SERVICE] Getting item with id {}", itemId);
@@ -130,6 +119,7 @@ public class ItemServiceImpl implements ItemService {
         );
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ItemWithBookingDto> getAll(long userId) {
         log.info("[ITEM_SERVICE] Trying to get all items for userId {}", userId);
@@ -152,6 +142,7 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.removeItemByIdAndOwnerId(itemId, userId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ItemDto> findByText(String text) {
         log.info("[ITEM_SERVICE] Trying to find item with pattern {}", text);
@@ -164,6 +155,7 @@ public class ItemServiceImpl implements ItemService {
                 .map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public CommentDto addComment(long itemId, long userId, Comment comment) {
 
@@ -179,9 +171,7 @@ public class ItemServiceImpl implements ItemService {
         comment.setItemId(itemId);
         comment.setAuthorId(userId);
 
-        commentRepository.save(comment);
-
-        return commentMapper.toCommentDto(comment);
+        return commentMapper.toCommentDto(commentRepository.save(comment));
     }
 
 }

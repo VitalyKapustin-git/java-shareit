@@ -56,7 +56,4 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> getRejectedOwnerBookings(List<Long> itemsId);
     // ---
 
-
-//    List<Booking> findByBookerIdAndEndIsBefore(Long bookerId, LocalDateTime end, Sort sort);
-
 }
