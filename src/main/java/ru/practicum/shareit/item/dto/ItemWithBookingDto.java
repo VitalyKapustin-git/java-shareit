@@ -34,4 +34,6 @@ public class ItemWithBookingDto {
 
     List<CommentDto> comments;
 
+    private Long requestId;
+
 }

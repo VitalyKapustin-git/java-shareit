@@ -19,6 +19,7 @@ public class ItemMapper {
         itemDto.setDescription(item.getDescription());
         itemDto.setAvailable(item.getAvailable());
         itemDto.setOwnerId(item.getOwnerId());
+        itemDto.setRequestId(item.getRequestId());
 
         return itemDto;
     }
@@ -38,6 +39,7 @@ public class ItemMapper {
         itemWithBookingDto.setLastBooking(lastBooking);
         itemWithBookingDto.setNextBooking(nextBooking);
         itemWithBookingDto.setComments(comments);
+        itemWithBookingDto.setRequestId(item.getRequestId());
 
         return itemWithBookingDto;
     }

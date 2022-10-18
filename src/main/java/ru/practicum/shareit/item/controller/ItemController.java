@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -10,26 +11,33 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequestMapping("/items")
+@Validated
+@AllArgsConstructor
 public class ItemController {
     private final ItemService itemService;
 
-    @Autowired
-    ItemController(ItemService itemService) {
-        this.itemService = itemService;
-    }
-
     @GetMapping
-    public List<ItemWithBookingDto> getUserItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId) {
-        return itemService.getAll(userId);
+    public List<ItemWithBookingDto> getUserItems(@RequestHeader(value = "X-Sharer-User-Id") Long userId,
+                                                 @RequestParam(name = "from", defaultValue = "0")
+                                                 @PositiveOrZero Integer from,
+                                                 @RequestParam(name = "size", defaultValue = "10")
+                                                 @Positive Integer size) {
+        return itemService.getAll(userId, from, size);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> findByText(@RequestParam(name = "text") String text) {
-        return itemService.findByText(text);
+    public List<ItemDto> findByText(@RequestParam(name = "text") String text,
+                                    @RequestParam(name = "from", defaultValue = "0")
+                                    @PositiveOrZero Integer from,
+                                    @RequestParam(name = "size", defaultValue = "10")
+                                    @Positive Integer size) {
+        return itemService.findByText(text, from, size);
     }
 
     @GetMapping("/{itemId}")

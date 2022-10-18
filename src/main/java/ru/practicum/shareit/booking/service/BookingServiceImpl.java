@@ -3,6 +3,8 @@ package ru.practicum.shareit.booking.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dao.BookingRepository;
@@ -50,31 +52,32 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getAllBookings(String status, long bookerId) {
+    public List<BookingDto> getAllBookings(String status, long bookerId, int from, int size) {
 
         if (userRepository.getUserById(bookerId) == null) throw new NotFoundException("Not found user.");
         BookingStatus bookingStatus = bookingStatusValidation(status);
 
         List<Booking> allBookings = List.of();
+        Pageable pageable = PageRequest.of(from / size, size);
 
         switch (bookingStatus.toString()) {
             case "CURRENT":
-                allBookings = bookingRepository.getCurrentBookings(bookerId);
+                allBookings = bookingRepository.getCurrentBookings(bookerId, pageable);
                 break;
             case "PAST":
-                allBookings = bookingRepository.getPastBookings(bookerId);
+                allBookings = bookingRepository.getPastBookings(bookerId, pageable);
                 break;
             case "FUTURE":
-                allBookings = bookingRepository.getFutureBookings(bookerId);
+                allBookings = bookingRepository.getFutureBookings(bookerId, pageable);
                 break;
             case "WAITING":
-                allBookings = bookingRepository.getWaitingBookings(bookerId);
+                allBookings = bookingRepository.getWaitingBookings(bookerId, pageable);
                 break;
             case "REJECTED":
-                allBookings = bookingRepository.getRejectedBookings(bookerId);
+                allBookings = bookingRepository.getRejectedBookings(bookerId, pageable);
                 break;
             case "ALL":
-                allBookings = bookingRepository.getBookingsByBookerIdOrderByStartDesc(bookerId);
+                allBookings = bookingRepository.getBookingsByBookerIdOrderByStartDesc(bookerId, pageable);
                 break;
         }
 
@@ -83,7 +86,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingDto> getOwnerBookings(String status, long bookerId) {
+    public List<BookingDto> getOwnerBookings(String status, long bookerId, int from, int size) {
 
         List<Booking> allBookings;
         List<Long> userItems = itemRepository.getAllUserItemsId(bookerId);
@@ -91,25 +94,26 @@ public class BookingServiceImpl implements BookingService {
         if (userItems.size() == 0) throw new NotFoundException("No bookings for this owner");
 
         BookingStatus bookingStatus = bookingStatusValidation(status);
+        Pageable pageable = PageRequest.of(from / size, size);
 
         switch (bookingStatus.toString()) {
             case "CURRENT":
-                allBookings = bookingRepository.getCurrentOwnerBookings(userItems);
+                allBookings = bookingRepository.getCurrentOwnerBookings(userItems, pageable);
                 break;
             case "PAST":
-                allBookings = bookingRepository.getPastOwnerBookings(userItems);
+                allBookings = bookingRepository.getPastOwnerBookings(userItems, pageable);
                 break;
             case "FUTURE":
-                allBookings = bookingRepository.getFutureOwnerBookings(userItems);
+                allBookings = bookingRepository.getFutureOwnerBookings(userItems, pageable);
                 break;
             case "WAITING":
-                allBookings = bookingRepository.getWaitingOwnerBookings(userItems);
+                allBookings = bookingRepository.getWaitingOwnerBookings(userItems, pageable);
                 break;
             case "REJECTED":
-                allBookings = bookingRepository.getRejectedOwnerBookings(userItems);
+                allBookings = bookingRepository.getRejectedOwnerBookings(userItems, pageable);
                 break;
             case "ALL":
-                allBookings = bookingRepository.getBookingsByItemIdInOrderByStartDesc(userItems);
+                allBookings = bookingRepository.getBookingsByItemIdInOrderByStartDesc(userItems, pageable);
                 break;
             default:
                 allBookings = List.of();

@@ -3,6 +3,8 @@ package ru.practicum.shareit.item.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dao.BookingRepository;
@@ -121,11 +123,13 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ItemWithBookingDto> getAll(long userId) {
+    public List<ItemWithBookingDto> getAll(long userId, int from, int size) {
         log.info("[ITEM_SERVICE] Trying to get all items for userId {}", userId);
 
+        Pageable pageable = PageRequest.of(from / size, size);
+
         List<ItemWithBookingDto> userItemsWithBooking = new ArrayList<>();
-        List<Item> userItems = itemRepository.getItemsByOwnerId(userId);
+        List<Item> userItems = itemRepository.getItemsByOwnerId(userId, pageable);
 
         userItems.forEach(
                 x -> userItemsWithBooking.add(get(x.getId(), userId))
@@ -144,14 +148,16 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ItemDto> findByText(String text) {
+    public List<ItemDto> findByText(String text, int from, int size) {
         log.info("[ITEM_SERVICE] Trying to find item with pattern {}", text);
 
         if (text.isEmpty()) {
             return List.of();
         }
 
-        return itemRepository.findByText(text).stream()
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        return itemRepository.findByText(text, pageable).stream()
                 .map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
