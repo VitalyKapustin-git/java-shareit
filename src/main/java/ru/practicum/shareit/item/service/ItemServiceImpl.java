@@ -41,8 +41,6 @@ public class ItemServiceImpl implements ItemService {
 
     private final CommentRepository commentRepository;
 
-    private final CommentMapper commentMapper;
-
     @Transactional
     @Override
     public ItemDto create(Item item, long userId) {
@@ -96,7 +94,7 @@ public class ItemServiceImpl implements ItemService {
             */
             lastBookingDate = bookingRepository.getBookingsByItemId(itemId).stream()
                     .filter(x -> x.getEnd().isBefore(LocalDateTime.now()))
-                    .max((x1, x2) -> x1.getEnd().isBefore(x2.getEnd()) ? 1 : 0)
+                    .min((x1, x2) -> x1.getEnd().isBefore(x2.getEnd()) ? 1 : 0)
                     .orElse(null);
 
             /*
@@ -112,12 +110,21 @@ public class ItemServiceImpl implements ItemService {
                     .orElse(null);
         }
 
+        List<CommentDto> commentDtos = commentRepository.getAllItemComments(itemId).stream()
+                .map(v -> {
+
+                    CommentDto commentDto = CommentMapper.toCommentDto(v);
+                    commentDto.setItemName(itemRepository.getItemById(v.getItemId()).getName());
+                    commentDto.setAuthorName(userService.get(v.getAuthorId()).getName());
+
+                    return commentDto;
+
+                }).collect(Collectors.toList());
+
         return ItemMapper.toItemBookingDto(itemRepository.getItemById(itemId),
                 lastBookingDate,
                 nextBookingDate,
-                commentRepository.getAllItemComments(itemId).stream()
-                        .map(commentMapper::toCommentDto)
-                        .collect(Collectors.toList())
+                commentDtos
         );
     }
 
@@ -172,12 +179,16 @@ public class ItemServiceImpl implements ItemService {
                 .count();
 
         if (bookingsNumber == 0) throw new BadRequestException("you must use booked item" +
-                " for full item before leave comment");
+                " for full time period before leave comment");
 
         comment.setItemId(itemId);
         comment.setAuthorId(userId);
 
-        return commentMapper.toCommentDto(commentRepository.save(comment));
+        CommentDto commentDto = CommentMapper.toCommentDto(commentRepository.save(comment));
+        commentDto.setItemName(itemRepository.getItemById(itemId).getName());
+        commentDto.setAuthorName(userService.get(userId).getName());
+
+        return commentDto;
     }
 
 }

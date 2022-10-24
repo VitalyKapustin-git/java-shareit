@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.core.exceptions.BadRequestException;
 import ru.practicum.shareit.core.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dao.ItemRepository;
+import ru.practicum.shareit.item.mappers.ItemMapper;
 import ru.practicum.shareit.request.dao.ItemRequestRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.mapper.ItemRequestMapper;
@@ -29,8 +30,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     ItemRepository itemRepository;
 
-    ItemRequestMapper itemRequestMapper;
-
     @Transactional
     @Override
     public ItemRequestDto create(ItemRequest itemRequest, Long requestorId) {
@@ -41,7 +40,13 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         userService.get(requestorId);
         itemRequest.setRequestorId(requestorId);
 
-        return itemRequestMapper.toItemRequestDto(itemRequestRepository.save(itemRequest));
+        ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequestRepository.save(itemRequest));
+        itemRequestDto.setItems(itemRepository.getItemsByRequestId(itemRequest.getId()).stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList())
+        );
+
+        return itemRequestDto;
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +58,14 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         userService.get(userId);
 
         return itemRequestRepository.getItemRequestsByRequestorId(userId).stream()
-                .map(itemRequestMapper::toItemRequestDto)
+                .map(v -> {
+                    ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(v);
+                    itemRequestDto.setItems(itemRepository.getItemsByRequestId(v.getId()).stream()
+                            .map(ItemMapper::toItemDto)
+                            .collect(Collectors.toList()));
+
+                    return itemRequestDto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -70,7 +82,14 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         return itemRequestRepository.getItemRequestsByRequestorIdNot(userId, pageable)
                 .stream()
-                .map(itemRequestMapper::toItemRequestDto)
+                .map(v -> {
+                    ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(v);
+                    itemRequestDto.setItems(itemRepository.getItemsByRequestId(v.getId()).stream()
+                            .map(ItemMapper::toItemDto)
+                            .collect(Collectors.toList()));
+
+                    return itemRequestDto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -84,6 +103,12 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         ItemRequest itemRequest = itemRequestRepository.getItemRequestById(requestId);
         if (itemRequest == null) throw new NotFoundException("Not found request with id " + requestId);
 
-        return itemRequestMapper.toItemRequestDto(itemRequest);
+        ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest);
+        itemRequestDto.setItems(itemRepository.getItemsByRequestId(itemRequest.getId()).stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList())
+        );
+
+        return itemRequestDto;
     }
 }

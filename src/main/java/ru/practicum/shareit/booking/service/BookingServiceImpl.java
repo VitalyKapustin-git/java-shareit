@@ -15,8 +15,10 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.core.exceptions.BadRequestException;
 import ru.practicum.shareit.core.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dao.ItemRepository;
+import ru.practicum.shareit.item.mappers.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dao.UserRepository;
+import ru.practicum.shareit.user.mappers.UserMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,8 +36,6 @@ public class BookingServiceImpl implements BookingService {
 
     private final ItemRepository itemRepository;
 
-    private final BookingMapper bookingMapper;
-
     @Transactional(readOnly = true)
     @Override
     public BookingDto getBooking(long bookingId, long userId) {
@@ -47,7 +47,11 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getBookerId() != userId && itemRepository.getItemById(booking.getId()).getOwnerId() != userId)
             throw new NotFoundException("any booking for userId: " + userId);
 
-        return bookingMapper.toBookingDto(booking);
+        BookingDto bookingDto = BookingMapper.toBookingDto(booking);
+        bookingDto.setItem(ItemMapper.toItemDto(itemRepository.getItemById(booking.getItemId())));
+        bookingDto.setBooker(UserMapper.toUserDto(userRepository.getUserById(booking.getBookerId())));
+
+        return bookingDto;
     }
 
     @Transactional(readOnly = true)
@@ -81,7 +85,7 @@ public class BookingServiceImpl implements BookingService {
                 break;
         }
 
-        return allBookings.stream().map(bookingMapper::toBookingDto).collect(Collectors.toList());
+        return getBookingDtos(allBookings);
     }
 
     @Transactional(readOnly = true)
@@ -120,8 +124,9 @@ public class BookingServiceImpl implements BookingService {
                 break;
         }
 
-        return allBookings.stream().map(bookingMapper::toBookingDto).collect(Collectors.toList());
+        return getBookingDtos(allBookings);
     }
+
 
     @Transactional(readOnly = true)
     @Override
@@ -151,7 +156,11 @@ public class BookingServiceImpl implements BookingService {
         log.info("Trying to create booking -> {}", booking);
         booking.setBookerId(bookerId);
 
-        return bookingMapper.toBookingDto(bookingRepository.save(booking));
+        BookingDto bookingDto = BookingMapper.toBookingDto(bookingRepository.save(booking));
+        bookingDto.setItem(ItemMapper.toItemDto(itemRepository.getItemById(booking.getItemId())));
+        bookingDto.setBooker(UserMapper.toUserDto(userRepository.getUserById(booking.getBookerId())));
+
+        return bookingDto;
     }
 
     @Override
@@ -173,7 +182,12 @@ public class BookingServiceImpl implements BookingService {
             booking.setBookingApproved("REJECTED");
         }
 
-        return bookingMapper.toBookingDto(booking);
+        BookingDto bookingDto = BookingMapper.toBookingDto(booking);
+        bookingDto.setItem(ItemMapper.toItemDto(itemRepository.getItemById(booking.getItemId())));
+        bookingDto.setBooker(UserMapper.toUserDto(userRepository.getUserById(booking.getBookerId())));
+
+        return bookingDto;
+
     }
 
     private BookingStatus bookingStatusValidation(String state) {
@@ -187,5 +201,17 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return bookingStatus;
+    }
+
+    private List<BookingDto> getBookingDtos(List<Booking> allBookings) {
+        return allBookings.stream().map(v -> {
+
+            BookingDto bookingDto = BookingMapper.toBookingDto(v);
+            bookingDto.setItem(ItemMapper.toItemDto(itemRepository.getItemById(v.getItemId())));
+            bookingDto.setBooker(UserMapper.toUserDto(userRepository.getUserById(v.getBookerId())));
+
+            return bookingDto;
+
+        }).collect(Collectors.toList());
     }
 }
