@@ -8,13 +8,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.core.exceptions.BadRequestException;
+import ru.practicum.shareit.core.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dao.CommentRepository;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.exceptions.NotOwnerException;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -72,6 +75,59 @@ public class ItemServiceUnitTest {
                 .thenReturn(item);
 
         Assertions.assertEquals(itemService.create(item, 2).getOwnerId(), 2);
+
+    }
+
+    @Test
+    public void findByText() {
+
+        Mockito
+                .when(itemRepository.findByText(Mockito.anyString(), Mockito.any(Pageable.class)))
+                .thenReturn(List.of(oldItem));
+
+        Assertions.assertEquals(oldItem.getDescription(), itemService.findByText("azaza", 1, 1)
+                .get(0).getDescription());
+
+    }
+
+    @Test
+    public void findByTextByBlank() {
+
+        Assertions.assertEquals(0, itemService.findByText("", 1, 1)
+                .size());
+
+    }
+
+    @Test
+    public void getAll() {
+
+        ItemWithBookingDto itemWithBookingDto = new ItemWithBookingDto();
+        itemWithBookingDto.setName("check");
+
+        Mockito
+                .when(itemRepository.getItemsByOwnerId(Mockito.anyLong(), Mockito.any(Pageable.class)))
+                .thenReturn(List.of(oldItem));
+
+        Mockito
+                .when(itemRepository.getItemById(Mockito.anyLong()))
+                .thenReturn(oldItem);
+
+        Assertions.assertEquals(oldItem.getName(), itemService.getAll(2L, 2, 2).get(0).getName());
+
+    }
+
+    @Test
+    public void get() {
+
+        Mockito
+                .when(itemRepository.getItemById(Mockito.anyLong()))
+                .thenReturn(null);
+
+        try {
+            itemService.get(1, 1);
+        } catch (NotFoundException e) {
+            Assertions.assertEquals("itemId: 1", e.getMessage());
+        }
 
     }
 

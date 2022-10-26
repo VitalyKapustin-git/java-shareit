@@ -355,6 +355,27 @@ public class BookingServiceUnitTest {
                 .thenReturn(n);
 
         Mockito
+                .when(bookingRepository.getPastBookings(Mockito.anyLong(), Mockito.any(Pageable.class)))
+                .thenReturn(n);
+
+        Mockito
+                .when(bookingRepository.getFutureBookings(Mockito.anyLong(), Mockito.any(Pageable.class)))
+                .thenReturn(n);
+
+        Mockito
+                .when(bookingRepository.getWaitingBookings(Mockito.anyLong(), Mockito.any(Pageable.class)))
+                .thenReturn(n);
+
+        Mockito
+                .when(bookingRepository.getRejectedBookings(Mockito.anyLong(), Mockito.any(Pageable.class)))
+                .thenReturn(n);
+
+        Mockito
+                .when(bookingRepository.getBookingsByBookerIdOrderByStartDesc(Mockito.anyLong(),
+                        Mockito.any(Pageable.class)))
+                .thenReturn(n);
+
+        Mockito
                 .when(itemRepository.getItemById(Mockito.anyLong()))
                 .thenReturn(item);
 
@@ -368,6 +389,133 @@ public class BookingServiceUnitTest {
         Assertions.assertEquals(booking.getStart(), bookingDto.getStart());
         Assertions.assertEquals(booking.getEnd(), bookingDto.getEnd());
         Assertions.assertEquals(item.getName(), bookingDto.getItem().getName());
+
+        BookingDto bookingDto1 = bookingService.getAllBookings("PAST", 24232, 0, 5).get(0);
+
+        Assertions.assertEquals(booking.getStart(), bookingDto1.getStart());
+        Assertions.assertEquals(booking.getEnd(), bookingDto1.getEnd());
+        Assertions.assertEquals(item.getName(), bookingDto1.getItem().getName());
+
+
+        BookingDto bookingDto2 = bookingService.getAllBookings("FUTURE", 24232, 0, 5).get(0);
+
+        Assertions.assertEquals(booking.getStart(), bookingDto2.getStart());
+        Assertions.assertEquals(booking.getEnd(), bookingDto2.getEnd());
+        Assertions.assertEquals(item.getName(), bookingDto2.getItem().getName());
+
+
+        BookingDto bookingDto3 = bookingService.getAllBookings("WAITING", 24232, 0, 5).get(0);
+
+        Assertions.assertEquals(booking.getStart(), bookingDto3.getStart());
+        Assertions.assertEquals(booking.getEnd(), bookingDto3.getEnd());
+        Assertions.assertEquals(item.getName(), bookingDto3.getItem().getName());
+
+
+        BookingDto bookingDto4 = bookingService.getAllBookings("REJECTED", 24232, 0, 5).get(0);
+
+        Assertions.assertEquals(booking.getStart(), bookingDto4.getStart());
+        Assertions.assertEquals(booking.getEnd(), bookingDto4.getEnd());
+        Assertions.assertEquals(item.getName(), bookingDto4.getItem().getName());
+
+
+        BookingDto bookingDto5 = bookingService.getAllBookings("ALL", 24232, 0, 5).get(0);
+
+        Assertions.assertEquals(booking.getStart(), bookingDto5.getStart());
+        Assertions.assertEquals(booking.getEnd(), bookingDto5.getEnd());
+        Assertions.assertEquals(item.getName(), bookingDto5.getItem().getName());
+
+    }
+
+    @Test
+    public void should_ReturnCorrectBookingDtoFromOwnerBookings() {
+
+        Booking booking = new Booking();
+        booking.setId(1);
+        booking.setBookerId(24232);
+        booking.setStart(LocalDateTime.of(2023, 10, 10, 10, 10));
+        booking.setEnd(LocalDateTime.of(2023, 10, 20, 10, 10));
+        booking.setBookingApproved("CURRENT");
+
+        List<Booking> n = new ArrayList<>();
+        n.add(booking);
+
+        Item item = new Item();
+        item.setName("zprs");
+
+        Mockito
+                .when(itemRepository.getAllUserItemsId(Mockito.anyLong()))
+                .thenReturn(List.of(1L));
+
+        Mockito
+                .when(itemRepository.getItemById(Mockito.anyLong()))
+                .thenReturn(item);
+
+        Mockito
+                .when(userRepository.getUserById(Mockito.anyLong()))
+                .thenReturn(new User());
+
+        Mockito
+                .when(bookingRepository.getCurrentOwnerBookings(Mockito.anyList(), Mockito.any(Pageable.class)))
+                .thenReturn(List.of(booking));
+
+        Mockito
+                .when(bookingRepository.getPastOwnerBookings(Mockito.anyList(), Mockito.any(Pageable.class)))
+                .thenReturn(List.of(booking));
+
+        Mockito
+                .when(bookingRepository.getFutureOwnerBookings(Mockito.anyList(), Mockito.any(Pageable.class)))
+                .thenReturn(List.of(booking));
+
+        Mockito
+                .when(bookingRepository.getWaitingOwnerBookings(Mockito.anyList(), Mockito.any(Pageable.class)))
+                .thenReturn(List.of(booking));
+
+        Mockito
+                .when(bookingRepository.getRejectedOwnerBookings(Mockito.anyList(), Mockito.any(Pageable.class)))
+                .thenReturn(List.of(booking));
+
+        Mockito
+                .when(bookingRepository.getBookingsByItemIdInOrderByStartDesc(Mockito.anyList(),
+                        Mockito.any(Pageable.class)))
+                .thenReturn(List.of(booking));
+
+
+        BookingDto bookingDto = bookingService.getOwnerBookings("CURRENT", 24232, 0, 5).get(0);
+
+        Assertions.assertEquals(booking.getStart(), bookingDto.getStart());
+        Assertions.assertEquals(booking.getEnd(), bookingDto.getEnd());
+        Assertions.assertEquals(item.getName(), bookingDto.getItem().getName());
+
+        BookingDto bookingDto1 = bookingService.getOwnerBookings("PAST", 24232, 0, 5).get(0);
+
+        Assertions.assertEquals(bookingDto1.getStart(), bookingDto.getStart());
+        Assertions.assertEquals(bookingDto1.getEnd(), bookingDto.getEnd());
+        Assertions.assertEquals(item.getName(), bookingDto.getItem().getName());
+
+        BookingDto bookingDto2 = bookingService.getOwnerBookings("FUTURE", 24232, 0, 5).get(0);
+
+        Assertions.assertEquals(bookingDto2.getStart(), bookingDto.getStart());
+        Assertions.assertEquals(bookingDto2.getEnd(), bookingDto.getEnd());
+        Assertions.assertEquals(item.getName(), bookingDto.getItem().getName());
+
+        BookingDto bookingDto3 = bookingService.getOwnerBookings("WAITING", 24232, 0, 5).get(0);
+
+        Assertions.assertEquals(bookingDto3.getStart(), bookingDto.getStart());
+        Assertions.assertEquals(bookingDto3.getEnd(), bookingDto.getEnd());
+        Assertions.assertEquals(item.getName(), bookingDto.getItem().getName());
+
+        BookingDto bookingDto4 = bookingService.getOwnerBookings("REJECTED", 24232, 0, 5).get(0);
+
+        Assertions.assertEquals(bookingDto4.getStart(), bookingDto.getStart());
+        Assertions.assertEquals(bookingDto4.getEnd(), bookingDto.getEnd());
+        Assertions.assertEquals(item.getName(), bookingDto.getItem().getName());
+
+        BookingDto bookingDto5 = bookingService.getOwnerBookings("ALL", 24232, 0, 5).get(0);
+
+        Assertions.assertEquals(bookingDto5.getStart(), bookingDto.getStart());
+        Assertions.assertEquals(bookingDto5.getEnd(), bookingDto.getEnd());
+        Assertions.assertEquals(item.getName(), bookingDto.getItem().getName());
+
 
     }
 

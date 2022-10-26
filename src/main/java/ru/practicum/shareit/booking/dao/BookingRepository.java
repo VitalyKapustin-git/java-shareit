@@ -20,6 +20,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> getBookingsByItemIdInOrderByStartDesc(List<Long> itemsId, Pageable pageable);
 
+    List<Booking> getBookingsByBookerIdOrderByStartDesc(Long bookerId, Pageable pageable);
+
     @Query("select b from Booking b where ?1 between b.start and b.end and b.itemId = ?2")
     List<Booking> getCrossBookingsForItem(LocalDateTime dt, long itemId);
 
