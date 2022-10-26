@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-public class BookingServiceTest {
+public class BookingServiceUnitTest {
 
     @InjectMocks
     BookingServiceImpl bookingService;
@@ -305,6 +305,36 @@ public class BookingServiceTest {
     }
 
     @Test
+    public void should_ThrowException_onGetAllBookings_when_RequestForNonExistedUser() {
+
+        Mockito
+                .when(userRepository.getUserById(Mockito.anyLong()))
+                .thenReturn(null);
+
+        try {
+            bookingService.getAllBookings("CURRENT", 24232, 0, 5);
+        } catch (NotFoundException e) {
+            Assertions.assertEquals("Not found user.", e.getMessage());
+        }
+
+    }
+
+    @Test
+    public void should_ThrowException_onGetOwnerBookings_when_NoBookings() {
+
+        Mockito
+                .when(itemRepository.getAllUserItemsId(Mockito.anyLong()))
+                .thenReturn(List.of());
+
+        try {
+            bookingService.getOwnerBookings("CURRENT", 24232, 0, 5);
+        } catch (NotFoundException e) {
+            Assertions.assertEquals("No bookings for this owner", e.getMessage());
+        }
+
+    }
+
+    @Test
     public void should_ReturnCorrectBookingDtoFromAllBookings() {
 
         Booking booking = new Booking();
@@ -373,6 +403,24 @@ public class BookingServiceTest {
 
         Assertions.assertEquals("APPROVED", bookingDto.getStatus());
         Assertions.assertEquals(user.getId(), booking.getBookerId());
+
+    }
+
+    @Test
+    public void should_ThrowException_onSetApprove_when_ApprovedBooking() {
+
+        Booking booking = new Booking();
+        booking.setBookingApproved("APPROVED");
+
+        Mockito
+                .when(bookingRepository.getBookingById(Mockito.anyLong()))
+                .thenReturn(booking);
+
+        try {
+            bookingService.setApprove(true, 1, 1);
+        } catch (BadRequestException e) {
+            Assertions.assertEquals("No any not approved bookings for userId: 1", e.getMessage());
+        }
 
     }
 

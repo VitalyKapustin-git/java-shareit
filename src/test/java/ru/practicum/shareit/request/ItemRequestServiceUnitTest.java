@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @ExtendWith(MockitoExtension.class)
-public class ItemRequestServiceTest {
+public class ItemRequestServiceUnitTest {
 
     @InjectMocks
     ItemRequestServiceImpl itemRequestService;

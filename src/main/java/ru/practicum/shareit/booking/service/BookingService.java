@@ -17,6 +17,4 @@ public interface BookingService {
 
     BookingDto setApprove(boolean approved, long bookingId, long userId);
 
-    List<Booking> getAllBookingsForItem(long itemId);
-
 }

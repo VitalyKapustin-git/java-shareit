@@ -57,9 +57,4 @@ public class BookingController {
         return bookingService.setApprove(Boolean.parseBoolean(approved), bookingId, bookerId);
     }
 
-    @GetMapping("/abc/{itemId}")
-    public List<Booking> getAllBookingsForItem(@PathVariable long itemId) {
-        return bookingService.getAllBookingsForItem(itemId);
-    }
-
 }

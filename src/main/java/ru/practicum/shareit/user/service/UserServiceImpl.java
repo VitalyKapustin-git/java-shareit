@@ -37,8 +37,12 @@ public class UserServiceImpl implements UserService {
 
         User oldUser = userRepository.getUserById(userId);
 
+        System.out.println("BEFORE: " + oldUser);
+
         if (userDto.getEmail() != null) oldUser.setEmail(userDto.getEmail());
         if (userDto.getName() != null) oldUser.setName(userDto.getName());
+
+        System.out.println("AFTER: " + oldUser);
 
         return UserMapper.toUserDto(userRepository.save(oldUser));
     }

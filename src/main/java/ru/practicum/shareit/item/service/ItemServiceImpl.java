@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
+
     private final UserService userService;
 
     private final BookingRepository bookingRepository;

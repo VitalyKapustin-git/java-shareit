@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-public class ItemServiceTest {
+public class ItemServiceUnitTest {
 
     @InjectMocks
     ItemServiceImpl itemService;

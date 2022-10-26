@@ -127,14 +127,6 @@ public class BookingServiceImpl implements BookingService {
         return getBookingDtos(allBookings);
     }
 
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<Booking> getAllBookingsForItem(long itemId) {
-        return bookingRepository.getBookingsByItemId(itemId);
-    }
-
-
     @Override
     @Transactional
     public BookingDto createBooking(long bookerId, Booking booking) {

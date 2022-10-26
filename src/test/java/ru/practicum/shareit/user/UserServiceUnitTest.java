@@ -15,7 +15,7 @@ import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+public class UserServiceUnitTest {
 
     @Mock
     UserRepository userRepository;
