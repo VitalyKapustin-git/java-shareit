@@ -15,6 +15,7 @@ import ru.practicum.shareit.request.controller.ItemRequestController;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.service.ItemRequestService;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,13 +49,12 @@ public class ItemRequestControllerTest {
 
         itemRequest = new ItemRequest();
         itemRequest.setId(1);
-        itemRequest.setRequestorId(1L);
+        itemRequest.setRequestor(new User());
         itemRequest.setCreated(LocalDateTime.of(2022, 10, 10, 10, 10, 10));
         itemRequest.setDescription("azaza");
 
         itemRequestDto = new ItemRequestDto();
         itemRequestDto.setId(1L);
-        itemRequestDto.setRequestorId(1L);
         itemRequestDto.setCreated(LocalDateTime.of(2022, 10, 10, 10, 10, 10));
         itemRequestDto.setDescription("azaza");
 
@@ -72,7 +72,6 @@ public class ItemRequestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(itemRequestDto.getId()))
-                .andExpect(jsonPath("$.requestorId").value(itemRequestDto.getRequestorId()))
                 .andExpect(jsonPath("$.description").value(itemRequestDto.getDescription()))
                 .andExpect(jsonPath("$.created").value(itemRequestDto.getCreated().toString()));
 
@@ -88,7 +87,6 @@ public class ItemRequestControllerTest {
                         .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(itemRequestDto.getId()))
-                .andExpect(jsonPath("$.requestorId").value(itemRequestDto.getRequestorId()))
                 .andExpect(jsonPath("$.description").value(itemRequestDto.getDescription()))
                 .andExpect(jsonPath("$.created").value(itemRequestDto.getCreated().toString()));
 
@@ -104,7 +102,6 @@ public class ItemRequestControllerTest {
                         .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(itemRequestDto.getId()))
-                .andExpect(jsonPath("$[0].requestorId").value(itemRequestDto.getRequestorId()))
                 .andExpect(jsonPath("$[0].description").value(itemRequestDto.getDescription()))
                 .andExpect(jsonPath("$[0].created").value(itemRequestDto.getCreated().toString()));
 
@@ -120,7 +117,6 @@ public class ItemRequestControllerTest {
                         .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(itemRequestDto.getId()))
-                .andExpect(jsonPath("$[0].requestorId").value(itemRequestDto.getRequestorId()))
                 .andExpect(jsonPath("$[0].description").value(itemRequestDto.getDescription()))
                 .andExpect(jsonPath("$[0].created").value(itemRequestDto.getCreated().toString()));
 

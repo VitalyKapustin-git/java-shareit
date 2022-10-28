@@ -9,9 +9,6 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
 @Builder
 @Entity
@@ -33,4 +30,5 @@ public class User {
     @Email(message = "Email пользователя (->xxx<-@mail.com) может включать латинские буквы (a-z), цифры (0-9) и точку (.).",
             regexp = "^[\\w\\d]+\\@[\\w]+\\.[a-z]+$")
     String email;
+
 }

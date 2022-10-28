@@ -1,18 +1,20 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -30,6 +32,21 @@ public class BookingServiceIntegrationTest {
 
     private final ItemService itemService;
 
+    private final BookingRepository bookingRepository;
+
+    private final UserRepository userRepository;
+
+    private final ItemRepository itemRepository;
+
+    @AfterAll
+    public void afterAll() {
+
+        bookingRepository.deleteAll();
+        userRepository.deleteAll();
+        itemRepository.deleteAll();
+
+    }
+
     @Test
     public void should_returnBookingList() {
 
@@ -41,28 +58,27 @@ public class BookingServiceIntegrationTest {
         itemBooker.setName("Бронировальщик");
         itemBooker.setEmail("booker@example.com");
 
-        UserDto itemOwnerDto = userService.create(itemOwner);
-        UserDto itemBookerDto = userService.create(itemBooker);
-
         Item item = new Item();
         item.setDescription("Дрель обычная");
         item.setName("Дрель");
         item.setAvailable(true);
 
-        ItemDto itemDto = itemService.create(item, itemOwnerDto.getId());
+        userService.create(itemOwner);
+        userService.create(itemBooker);
+        itemService.create(item, itemOwner.getId());
 
         Booking futureBooking = new Booking();
-        futureBooking.setItemId(itemDto.getId());
+        futureBooking.setItemId(item.getId());
         futureBooking.setBookingApproved("FUTURE");
-        futureBooking.setBookerId(itemBookerDto.getId());
+        futureBooking.setBooker(itemBooker);
         futureBooking.setStart(LocalDateTime.now().plusYears(1));
         futureBooking.setEnd(LocalDateTime.now().plusYears(2));
 
-        bookingService.createBooking(itemBookerDto.getId(), futureBooking);
+        bookingService.createBooking(itemBooker.getId(), futureBooking);
 
 
         Assertions.assertEquals("FUTURE",
-                bookingService.getBooking(futureBooking.getId(), itemBookerDto.getId()).getStatus());
+                bookingService.getBooking(futureBooking.getId(), itemBooker.getId()).getStatus());
 
     }
 

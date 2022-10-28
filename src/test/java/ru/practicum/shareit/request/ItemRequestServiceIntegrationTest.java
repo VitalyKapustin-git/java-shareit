@@ -10,7 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
@@ -27,7 +26,7 @@ public class ItemRequestServiceIntegrationTest {
 
     private final UserService userService;
 
-    ItemRequest itemRequest;
+    ItemRequestDto itemRequest;
 
     User itemRequestor;
 
@@ -40,7 +39,7 @@ public class ItemRequestServiceIntegrationTest {
 
         userService.create(itemRequestor);
 
-        itemRequest = new ItemRequest();
+        itemRequest = new ItemRequestDto();
         itemRequest.setRequestorId(itemRequestor.getId());
         itemRequest.setDescription("Очень нужна дрель!");
 

@@ -49,20 +49,36 @@ public class ItemServiceUnitTest {
 
     Item oldItem = new Item();
 
+    Item item = new Item();
+
+    UserDto user = new UserDto();
+
     @BeforeEach
     public void setUp() {
+
+        user.setId(3L);
+        user.setName("Vitaly");
+
         oldItem.setId(1);
         oldItem.setName("item");
         oldItem.setOwnerId(2);
         oldItem.setAvailable(true);
         oldItem.setDescription("azaza");
-        oldItem.setRequestId(3L);
+        oldItem.setRequestId(1L);
+
+        item.setId(1);
+        item.setName("item");
+        item.setOwnerId(2);
+        item.setAvailable(true);
+        item.setDescription("azaza");
+        item.setRequestId(1L);
+
     }
 
     @Test
     public void testCreateItem() {
 
-        Item item = oldItem;
+        Item item1 = oldItem;
 
         oldItem.setOwnerId(0);
 
@@ -71,10 +87,10 @@ public class ItemServiceUnitTest {
                 .thenReturn(UserMapper.toUserDto(new User()));
 
         Mockito
-                .when(itemRepository.save(item))
-                .thenReturn(item);
+                .when(itemRepository.save(item1))
+                .thenReturn(oldItem);
 
-        Assertions.assertEquals(itemService.create(item, 2).getOwnerId(), 2);
+        Assertions.assertEquals(itemService.create(item1, 2).getOwnerId(), 2);
 
     }
 
@@ -158,7 +174,7 @@ public class ItemServiceUnitTest {
 
         Mockito
                 .when(itemRepository.getItemById(1))
-                .thenReturn(oldItem);
+                .thenReturn(item);
 
         ItemDto newItemDto = new ItemDto();
 
@@ -174,27 +190,35 @@ public class ItemServiceUnitTest {
     public void testGetItem() {
 
         Booking booking1 = new Booking();
+        booking1.setItem(item);
+        booking1.setBooker(new User());
         booking1.setStart(LocalDateTime.of(2021, 2, 2, 10, 0));
         booking1.setEnd(LocalDateTime.of(2021, 2, 3, 10, 0));
 
         Booking booking2 = new Booking();
+        booking2.setItem(item);
+        booking2.setBooker(new User());
         booking2.setStart(LocalDateTime.of(2022, 10, 18, 10, 0));
         booking2.setEnd(LocalDateTime.of(2022, 10, 19, 10, 0));
 
         Booking booking3 = new Booking();
+        booking3.setItem(item);
+        booking3.setBooker(new User());
         booking3.setStart(LocalDateTime.of(2022, 12, 2, 10, 0));
         booking3.setEnd(LocalDateTime.of(2022, 12, 3, 10, 0));
 
         Booking booking4 = new Booking();
+        booking4.setItem(item);
+        booking4.setBooker(new User());
         booking4.setStart(LocalDateTime.of(2023, 2, 2, 10, 0));
         booking4.setEnd(LocalDateTime.of(2023, 2, 3, 10, 0));
 
         Mockito
                 .when(itemRepository.getItemById(1))
-                .thenReturn(oldItem);
+                .thenReturn(item);
 
         Mockito
-                .when(bookingRepository.getBookingsByItemId(oldItem.getId()))
+                .when(bookingRepository.getBookingsByItem_Id(oldItem.getId()))
                 .thenReturn(
                         List.of(
                                 booking1, booking2, booking3, booking4
@@ -219,14 +243,16 @@ public class ItemServiceUnitTest {
         Comment comment = new Comment();
         comment.setText("mycomment");
 
-        Booking booking = new Booking();
-        booking.setItemId(1);
-
         Item item = new Item();
+        item.setId(1);
         item.setName("testItemName");
 
         UserDto user = new UserDto();
         user.setName("testAuthorName");
+
+        Booking booking = new Booking();
+        booking.setBooker(new User());
+        booking.setItem(item);
 
         Mockito
                 .when(bookingRepository.getPastBookings(2L))

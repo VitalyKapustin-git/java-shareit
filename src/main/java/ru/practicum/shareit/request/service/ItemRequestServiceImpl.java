@@ -6,14 +6,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.core.exceptions.BadRequestException;
 import ru.practicum.shareit.core.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dao.ItemRepository;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mappers.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dao.ItemRequestRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.util.List;
@@ -24,24 +26,25 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ItemRequestServiceImpl implements ItemRequestService {
 
-    ItemRequestRepository itemRequestRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
-    UserService userService;
+    private final UserService userService;
 
-    ItemRepository itemRepository;
+    private final ItemRepository itemRepository;
 
     @Transactional
     @Override
-    public ItemRequestDto create(ItemRequest itemRequest, Long requestorId) {
-
-        if (itemRequest.getDescription().isBlank()) throw new BadRequestException("Description couldn't be empty!");
+    public ItemRequestDto create(ItemRequestDto itemRequestDto, Long requestorId) {
 
         // Проверка, существует ли пользователь
-        userService.get(requestorId);
-        itemRequest.setRequestorId(requestorId);
+        UserDto requestorDto = userService.get(requestorId);
+        itemRequestDto.setRequestorId(requestorId);
+        itemRequestDto.setRequestorDto(requestorDto);
 
-        ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequestRepository.save(itemRequest));
-        itemRequestDto.setItems(itemRepository.getItemsByRequestId(itemRequest.getId()).stream()
+        ItemRequest itemRequest = itemRequestRepository.save(ItemRequestMapper.toItemRequest(itemRequestDto));
+
+        itemRequestDto.setId(itemRequest.getId());
+        itemRequestDto.setItems(itemRepository.getItemsByRequestId(itemRequestDto.getId()).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList())
         );
@@ -57,16 +60,14 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         // Проверка, существует ли пользователь
         userService.get(userId);
 
-        return itemRequestRepository.getItemRequestsByRequestorId(userId).stream()
-                .map(v -> {
-                    ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(v);
-                    itemRequestDto.setItems(itemRepository.getItemsByRequestId(v.getId()).stream()
-                            .map(ItemMapper::toItemDto)
-                            .collect(Collectors.toList()));
-
-                    return itemRequestDto;
-                })
+        List<ItemRequestDto> itemRequests = itemRequestRepository.getItemRequestsByRequestorId(userId).stream()
+                .map(ItemRequestMapper::toItemRequestDto)
                 .collect(Collectors.toList());
+
+        setItemsToItemRequest(itemRequests);
+
+        return itemRequests;
+
     }
 
     @Transactional(readOnly = true)
@@ -80,17 +81,13 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         Pageable pageable = PageRequest.of(fromPage, size);
 
-        return itemRequestRepository.getItemRequestsByRequestorIdNot(userId, pageable)
-                .stream()
-                .map(v -> {
-                    ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(v);
-                    itemRequestDto.setItems(itemRepository.getItemsByRequestId(v.getId()).stream()
-                            .map(ItemMapper::toItemDto)
-                            .collect(Collectors.toList()));
-
-                    return itemRequestDto;
-                })
+        List<ItemRequestDto> itemRequests = itemRequestRepository.getItemRequestsByRequestorIdNot(userId, pageable).stream()
+                .map(ItemRequestMapper::toItemRequestDto)
                 .collect(Collectors.toList());
+
+        setItemsToItemRequest(itemRequests);
+
+        return itemRequests;
     }
 
     @Transactional(readOnly = true)
@@ -101,15 +98,39 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         userService.get(userId);
 
         ItemRequest itemRequest = itemRequestRepository.getItemRequestById(requestId);
+
         if (itemRequest == null) throw new NotFoundException("Not found request with id " + requestId);
 
         ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest);
-        itemRequestDto.setItems(itemRepository.getItemsByRequestId(itemRequest.getId()).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList())
-        );
+        List<Item> items = itemRepository.getItemsByRequestId(itemRequestDto.getId());
+
+        if (items.size() > 0) {
+
+            itemRequestDto.setItems(items.stream()
+                    .map(ItemMapper::toItemDto)
+                    .collect(Collectors.toList())
+            );
+
+        }
 
         return itemRequestDto;
+    }
+
+    private void setItemsToItemRequest(List<ItemRequestDto> itemRequests) {
+        List<Long> itemRequestsId = itemRequests.stream().map(ItemRequestDto::getId).collect(Collectors.toList());
+
+        List<ItemDto> items = itemRepository.getItemsByRequestIdIn(itemRequestsId).stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
+
+        itemRequests.forEach(v -> v.setItems(
+                        items.stream()
+                                .filter(i -> i.getRequestId() != null)
+                                .filter(i -> i.getRequestId() == v.getId())
+                                .collect(Collectors.toList())
+                )
+        );
+
     }
 
 }

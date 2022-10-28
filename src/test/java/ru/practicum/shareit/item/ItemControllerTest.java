@@ -11,7 +11,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.controller.ItemController;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -52,7 +51,6 @@ public class ItemControllerTest {
         item.setName("Дрель");
         item.setDescription("Супер дрель");
         item.setOwnerId(1);
-        item.setRequestId(1L);
         item.setAvailable(true);
 
         itemDto = new ItemDto();
@@ -60,7 +58,6 @@ public class ItemControllerTest {
         itemDto.setName("Дрель");
         itemDto.setDescription("Супер дрель");
         itemDto.setOwnerId(1);
-        itemDto.setRequestId(1L);
         itemDto.setAvailable(true);
 
     }
@@ -110,8 +107,8 @@ public class ItemControllerTest {
 
         when(itemService.getAll(anyLong(), anyInt(), anyInt()))
                 .thenReturn(List.of(ItemMapper.toItemBookingDto(item,
-                        new Booking(),
-                        new Booking(),
+                        null,
+                        null,
                         List.of(new CommentDto())
                 )));
 
@@ -132,8 +129,8 @@ public class ItemControllerTest {
 
         when(itemService.get(anyLong(), anyLong()))
                 .thenReturn(ItemMapper.toItemBookingDto(item,
-                        new Booking(),
-                        new Booking(),
+                        null,
+                        null,
                         List.of(new CommentDto())
                 ));
 

@@ -3,7 +3,8 @@ package ru.practicum.shareit.item.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.dto.BookingItemDto;
+import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -28,12 +29,14 @@ public class ItemWithBookingDto {
 
     private long ownerId;
 
-    Booking lastBooking;
+    private BookingItemDto lastBooking;
 
-    Booking nextBooking;
+    private BookingItemDto nextBooking;
 
-    List<CommentDto> comments;
+    private List<CommentDto> comments;
 
     private Long requestId;
+
+    private ItemRequestDto requestDto;
 
 }

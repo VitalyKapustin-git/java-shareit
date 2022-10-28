@@ -102,12 +102,13 @@ public class ItemServiceIntegrationTest {
         comment.setItemId(itemDto.getId());
 
         Booking booking = new Booking();
-        booking.setItemId(itemDto.getId());
+        booking.setBooker(new User());
+        booking.setItem(item);
 
         LocalDateTime localDateTime = LocalDateTime.now();
 
         Mockito
-                .when(bookingRepository.getPastBookings(Mockito.anyLong()))
+                .when(bookingRepository.getPastBookings(user2.getId()))
                 .thenReturn(List.of(booking));
 
         CommentDto commentDto = itemService.addComment(itemDto.getId(), user2.getId(), comment);

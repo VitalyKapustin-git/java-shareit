@@ -50,7 +50,6 @@ public class BookingControllerTest {
         booking = new Booking();
         booking.setId(1);
         booking.setItemId(1);
-        booking.setBookerId(1);
         booking.setStart(LocalDateTime.of(2022, 10, 10, 10, 10, 10));
         booking.setEnd(LocalDateTime.of(2050, 10, 10, 10, 10, 10));
         booking.setBookingApproved("APPROVED");

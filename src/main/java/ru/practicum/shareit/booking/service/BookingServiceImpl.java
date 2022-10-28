@@ -15,10 +15,9 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.core.exceptions.BadRequestException;
 import ru.practicum.shareit.core.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dao.ItemRepository;
-import ru.practicum.shareit.item.mappers.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dao.UserRepository;
-import ru.practicum.shareit.user.mappers.UserMapper;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,19 +38,16 @@ public class BookingServiceImpl implements BookingService {
     @Transactional(readOnly = true)
     @Override
     public BookingDto getBooking(long bookingId, long userId) {
+
         Booking booking = bookingRepository.getBookingById(bookingId);
 
         if (booking == null) throw new NotFoundException("bookingId: " + bookingId);
 
         // Может быть выполнено либо автором бронирования, либо владельцем вещи
-        if (booking.getBookerId() != userId && itemRepository.getItemById(booking.getId()).getOwnerId() != userId)
+        if (booking.getBooker().getId() != userId && itemRepository.getItemById(booking.getItem().getId()).getOwnerId() != userId)
             throw new NotFoundException("any booking for userId: " + userId);
 
-        BookingDto bookingDto = BookingMapper.toBookingDto(booking);
-        bookingDto.setItem(ItemMapper.toItemDto(itemRepository.getItemById(booking.getItemId())));
-        bookingDto.setBooker(UserMapper.toUserDto(userRepository.getUserById(booking.getBookerId())));
-
-        return bookingDto;
+        return BookingMapper.toBookingDto(booking);
     }
 
     @Transactional(readOnly = true)
@@ -81,7 +77,7 @@ public class BookingServiceImpl implements BookingService {
                 allBookings = bookingRepository.getRejectedBookings(bookerId, pageable);
                 break;
             case "ALL":
-                allBookings = bookingRepository.getBookingsByBookerIdOrderByStartDesc(bookerId, pageable);
+                allBookings = bookingRepository.getBookingsByBooker_IdOrderByStartDesc(bookerId, pageable);
                 break;
         }
 
@@ -117,7 +113,7 @@ public class BookingServiceImpl implements BookingService {
                 allBookings = bookingRepository.getRejectedOwnerBookings(userItems, pageable);
                 break;
             case "ALL":
-                allBookings = bookingRepository.getBookingsByItemIdInOrderByStartDesc(userItems, pageable);
+                allBookings = bookingRepository.getBookingsByItem_IdInOrderByStartDesc(userItems, pageable);
                 break;
             default:
                 allBookings = List.of();
@@ -132,8 +128,9 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto createBooking(long bookerId, Booking booking) {
 
         Item itemForBooking = itemRepository.getItemById(booking.getItemId());
+        User booker = userRepository.getUserById(bookerId);
 
-        if (userRepository.getUserById(bookerId) == null) throw new NotFoundException("Not found user.");
+        if (booker == null) throw new NotFoundException("Not found user.");
         if (itemForBooking == null) throw new NotFoundException("Not found item for booking.");
         if (!itemForBooking.getAvailable()) throw new BadRequestException("Item not available!");
         if (booking.getEnd().isBefore(booking.getStart()))
@@ -146,13 +143,10 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("User could not book own item:  " + booking.getItemId());
 
         log.info("Trying to create booking -> {}", booking);
-        booking.setBookerId(bookerId);
+        booking.setBooker(booker);
+        booking.setItem(itemForBooking);
 
-        BookingDto bookingDto = BookingMapper.toBookingDto(bookingRepository.save(booking));
-        bookingDto.setItem(ItemMapper.toItemDto(itemRepository.getItemById(booking.getItemId())));
-        bookingDto.setBooker(UserMapper.toUserDto(userRepository.getUserById(booking.getBookerId())));
-
-        return bookingDto;
+        return BookingMapper.toBookingDto(bookingRepository.save(booking));
     }
 
     @Override
@@ -165,7 +159,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("No any not approved bookings for userId: " + userId);
 
         // Если пользователь меняющий статус (userId) не владелец вещи, то отказ
-        if (itemRepository.getItemById(booking.getItemId()).getOwnerId() != userId)
+        if (itemRepository.getItemById(booking.getItem().getId()).getOwnerId() != userId)
             throw new NotFoundException("any items for userId: " + userId);
 
         if (Boolean.toString(approved).equalsIgnoreCase("true")) {
@@ -174,11 +168,7 @@ public class BookingServiceImpl implements BookingService {
             booking.setBookingApproved("REJECTED");
         }
 
-        BookingDto bookingDto = BookingMapper.toBookingDto(booking);
-        bookingDto.setItem(ItemMapper.toItemDto(itemRepository.getItemById(booking.getItemId())));
-        bookingDto.setBooker(UserMapper.toUserDto(userRepository.getUserById(booking.getBookerId())));
-
-        return bookingDto;
+        return BookingMapper.toBookingDto(bookingRepository.save(booking));
 
     }
 
@@ -196,14 +186,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private List<BookingDto> getBookingDtos(List<Booking> allBookings) {
-        return allBookings.stream().map(v -> {
-
-            BookingDto bookingDto = BookingMapper.toBookingDto(v);
-            bookingDto.setItem(ItemMapper.toItemDto(itemRepository.getItemById(v.getItemId())));
-            bookingDto.setBooker(UserMapper.toUserDto(userRepository.getUserById(v.getBookerId())));
-
-            return bookingDto;
-
-        }).collect(Collectors.toList());
+        return allBookings.stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }
 }

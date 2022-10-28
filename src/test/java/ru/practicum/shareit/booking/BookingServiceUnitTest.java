@@ -49,12 +49,6 @@ public class BookingServiceUnitTest {
 
     @Test
     public void should_CreateBooking() {
-        Booking booking = new Booking();
-        booking.setId(1);
-        booking.setBookingApproved("APPROVED");
-        booking.setStart(LocalDateTime.of(2030, 2, 2, 10, 0));
-        booking.setEnd(LocalDateTime.of(2030, 2, 3, 10, 0));
-        booking.setItemId(3);
 
         Item item = new Item();
         item.setId(3);
@@ -63,6 +57,14 @@ public class BookingServiceUnitTest {
 
         User booker = new User();
         booker.setId(2);
+
+        Booking booking = new Booking();
+        booking.setId(1);
+        booking.setBookingApproved("APPROVED");
+        booking.setStart(LocalDateTime.of(2030, 2, 2, 10, 0));
+        booking.setEnd(LocalDateTime.of(2030, 2, 3, 10, 0));
+        booking.setItem(item);
+        booking.setBooker(booker);
 
         Mockito
                 .when(itemRepository.getItemById(booking.getItemId()))
@@ -78,7 +80,7 @@ public class BookingServiceUnitTest {
 
         bookingService.createBooking(booker.getId(), booking);
 
-        Assertions.assertEquals(booker.getId(), booking.getBookerId());
+        Assertions.assertEquals(booker.getId(), booking.getBooker().getId());
 
     }
 
@@ -86,11 +88,13 @@ public class BookingServiceUnitTest {
     public void should_ThrowException_when_CreateBookingWithNonExistingBooker() {
 
         Booking booking = new Booking();
+        booking.setBooker(new User());
+        booking.setItem(new Item());
 
         Item item = new Item();
 
         Mockito
-                .when(itemRepository.getItemById(booking.getItemId()))
+                .when(itemRepository.getItemById(booking.getItem().getId()))
                 .thenReturn(item);
 
         Mockito
@@ -109,6 +113,8 @@ public class BookingServiceUnitTest {
     public void should_ThrowException_when_CreateBookingForNonExistingItem() {
 
         Booking booking = new Booking();
+        booking.setBooker(new User());
+        booking.setItem(new Item());
 
         Mockito
                 .when(itemRepository.getItemById(booking.getItemId()))
@@ -130,6 +136,8 @@ public class BookingServiceUnitTest {
     public void should_ThrowException_when_CreateBookingForNonAvailableItem() {
 
         Booking booking = new Booking();
+        booking.setBooker(new User());
+        booking.setItem(new Item());
 
         Item item = new Item();
         item.setAvailable(false);
@@ -153,6 +161,8 @@ public class BookingServiceUnitTest {
     public void should_ThrowException_when_CreateBookingWhenEndBeforeStart() {
 
         Booking booking = new Booking();
+        booking.setBooker(new User());
+        booking.setItem(new Item());
         booking.setStart(LocalDateTime.of(2030, 2, 3, 10, 0));
         booking.setEnd(LocalDateTime.of(2030, 2, 2, 10, 0));
 
@@ -178,6 +188,8 @@ public class BookingServiceUnitTest {
     public void should_ThrowException_when_CreateBookingWhenStartInPast() {
 
         Booking booking = new Booking();
+        booking.setBooker(new User());
+        booking.setItem(new Item());
         booking.setStart(LocalDateTime.of(2017, 2, 3, 10, 0));
         booking.setEnd(LocalDateTime.of(2030, 2, 2, 10, 0));
 
@@ -203,6 +215,8 @@ public class BookingServiceUnitTest {
     public void should_ThrowException_when_CreateBookingWhenItemAlreadyBooked() {
 
         Booking booking = new Booking();
+        booking.setBooker(new User());
+        booking.setItem(new Item());
         booking.setStart(LocalDateTime.of(2029, 2, 3, 10, 0));
         booking.setEnd(LocalDateTime.of(2030, 2, 2, 10, 0));
 
@@ -248,12 +262,16 @@ public class BookingServiceUnitTest {
     @Test
     public void should_ThrowException_onReturnBooking_when_RequestNotOwnerOrAuthor() {
 
-        Booking booking = new Booking();
-        booking.setId(1);
-        booking.setBookerId(24232);
+        User booker = new User();
+        booker.setId(343);
 
         Item item = new Item();
         item.setOwnerId(543653423);
+
+        Booking booking = new Booking();
+        booking.setBooker(booker);
+        booking.setItem(item);
+        booking.setId(1);
 
         Mockito
                 .lenient()
@@ -261,7 +279,7 @@ public class BookingServiceUnitTest {
                 .thenReturn(booking);
 
         Mockito
-                .when(itemRepository.getItemById(booking.getId()))
+                .when(itemRepository.getItemById(booking.getItem().getId()))
                 .thenReturn(item);
 
         try {
@@ -274,29 +292,40 @@ public class BookingServiceUnitTest {
 
     @Test
     public void should_ReturnBookingById() {
+
+        User owner = new User();
+        owner.setId(242342332);
+
+        User booker = new User();
+        booker.setId(3131);
+
+        Item item = new Item();
+        item.setName("ololo");
+        item.setOwnerId(owner.getId());
+
         Booking booking = new Booking();
+        booking.setBooker(booker);
+        booking.setItem(item);
         booking.setId(1);
-        booking.setBookerId(24232);
         booking.setStart(LocalDateTime.of(2023, 10, 10, 10, 10));
         booking.setEnd(LocalDateTime.of(2023, 10, 20, 10, 10));
         booking.setBookingApproved("CURRENT");
 
-        Item item = new Item();
-        item.setName("ololo");
-
         Mockito
-                .when(bookingRepository.getBookingById(1))
+                .when(bookingRepository.getBookingById(booking.getId()))
                 .thenReturn(booking);
 
         Mockito
-                .when(itemRepository.getItemById(booking.getItemId()))
+                .lenient()
+                .when(itemRepository.getItemById(booking.getItem().getId()))
                 .thenReturn(item);
 
         Mockito
-                .when(userRepository.getUserById(booking.getBookerId()))
-                .thenReturn(new User());
+                .lenient()
+                .when(userRepository.getUserById(booking.getBooker().getId()))
+                .thenReturn(booker);
 
-        BookingDto bookingDto = bookingService.getBooking(1, 24232);
+        BookingDto bookingDto = bookingService.getBooking(1, booker.getId());
 
         Assertions.assertEquals("ololo", bookingDto.getItem().getName());
         Assertions.assertNotNull(bookingDto.getBooker());
@@ -337,18 +366,19 @@ public class BookingServiceUnitTest {
     @Test
     public void should_ReturnCorrectBookingDtoFromAllBookings() {
 
+        Item item = new Item();
+        item.setName("zprs");
+
         Booking booking = new Booking();
+        booking.setBooker(new User());
+        booking.setItem(item);
         booking.setId(1);
-        booking.setBookerId(24232);
         booking.setStart(LocalDateTime.of(2023, 10, 10, 10, 10));
         booking.setEnd(LocalDateTime.of(2023, 10, 20, 10, 10));
         booking.setBookingApproved("CURRENT");
 
         List<Booking> n = new ArrayList<>();
         n.add(booking);
-
-        Item item = new Item();
-        item.setName("zprs");
 
         Mockito
                 .when(bookingRepository.getCurrentBookings(Mockito.anyLong(), Mockito.any(Pageable.class)))
@@ -371,15 +401,17 @@ public class BookingServiceUnitTest {
                 .thenReturn(n);
 
         Mockito
-                .when(bookingRepository.getBookingsByBookerIdOrderByStartDesc(Mockito.anyLong(),
+                .when(bookingRepository.getBookingsByBooker_IdOrderByStartDesc(Mockito.anyLong(),
                         Mockito.any(Pageable.class)))
                 .thenReturn(n);
 
         Mockito
+                .lenient()
                 .when(itemRepository.getItemById(Mockito.anyLong()))
                 .thenReturn(item);
 
         Mockito
+                .lenient()
                 .when(userRepository.getUserById(Mockito.anyLong()))
                 .thenReturn(new User());
 
@@ -429,9 +461,13 @@ public class BookingServiceUnitTest {
     @Test
     public void should_ReturnCorrectBookingDtoFromOwnerBookings() {
 
+        Item item = new Item();
+        item.setName("zprs");
+
         Booking booking = new Booking();
+        booking.setBooker(new User());
+        booking.setItem(item);
         booking.setId(1);
-        booking.setBookerId(24232);
         booking.setStart(LocalDateTime.of(2023, 10, 10, 10, 10));
         booking.setEnd(LocalDateTime.of(2023, 10, 20, 10, 10));
         booking.setBookingApproved("CURRENT");
@@ -439,20 +475,15 @@ public class BookingServiceUnitTest {
         List<Booking> n = new ArrayList<>();
         n.add(booking);
 
-        Item item = new Item();
-        item.setName("zprs");
-
         Mockito
+                .lenient()
                 .when(itemRepository.getAllUserItemsId(Mockito.anyLong()))
                 .thenReturn(List.of(1L));
 
         Mockito
-                .when(itemRepository.getItemById(Mockito.anyLong()))
+                .lenient()
+                .when(itemRepository.getItemById(booking.getItem().getId()))
                 .thenReturn(item);
-
-        Mockito
-                .when(userRepository.getUserById(Mockito.anyLong()))
-                .thenReturn(new User());
 
         Mockito
                 .when(bookingRepository.getCurrentOwnerBookings(Mockito.anyList(), Mockito.any(Pageable.class)))
@@ -475,7 +506,7 @@ public class BookingServiceUnitTest {
                 .thenReturn(List.of(booking));
 
         Mockito
-                .when(bookingRepository.getBookingsByItemIdInOrderByStartDesc(Mockito.anyList(),
+                .when(bookingRepository.getBookingsByItem_IdInOrderByStartDesc(Mockito.anyList(),
                         Mockito.any(Pageable.class)))
                 .thenReturn(List.of(booking));
 
@@ -522,14 +553,16 @@ public class BookingServiceUnitTest {
     @Test
     public void should_addApproveToBooking() {
 
-        Booking booking = new Booking();
-        booking.setItemId(1);
-        booking.setBookerId(1);
-
         User user = new User();
         user.setId(1);
         user.setName("sadsad");
         user.setEmail("fsdf@yfds.df");
+
+        Booking booking = new Booking();
+        booking.setBooker(new User());
+        booking.setItem(new Item());
+        booking.setItemId(1);
+        booking.setBooker(user);
 
         Item item = new Item();
         item.setId(1);
@@ -540,17 +573,17 @@ public class BookingServiceUnitTest {
                 .thenReturn(booking);
 
         Mockito
-                .when(itemRepository.getItemById(1))
+                .when(itemRepository.getItemById(booking.getItem().getId()))
                 .thenReturn(item);
 
         Mockito
-                .when(userRepository.getUserById(Mockito.anyLong()))
-                .thenReturn(user);
+                .when(bookingRepository.save(booking))
+                .thenReturn(booking);
 
         BookingDto bookingDto = bookingService.setApprove(true, 1, 1);
 
         Assertions.assertEquals("APPROVED", bookingDto.getStatus());
-        Assertions.assertEquals(user.getId(), booking.getBookerId());
+        Assertions.assertEquals(user.getId(), booking.getBooker().getId());
 
     }
 
@@ -558,6 +591,8 @@ public class BookingServiceUnitTest {
     public void should_ThrowException_onSetApprove_when_ApprovedBooking() {
 
         Booking booking = new Booking();
+        booking.setBooker(new User());
+        booking.setItem(new Item());
         booking.setBookingApproved("APPROVED");
 
         Mockito
