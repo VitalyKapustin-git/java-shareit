@@ -12,13 +12,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingItemDto;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.service.BookingServiceImpl;
 import ru.practicum.shareit.core.exceptions.BadRequestException;
 import ru.practicum.shareit.core.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dao.ItemRepository;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dao.UserRepository;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -604,6 +608,64 @@ public class BookingServiceUnitTest {
         } catch (BadRequestException e) {
             Assertions.assertEquals("No any not approved bookings for userId: 1", e.getMessage());
         }
+
+    }
+
+    @Test
+    public void should_ReturnBookingDto() {
+
+        User booker = new User();
+        booker.setId(1);
+        booker.setName("Booker User");
+        booker.setEmail("test@example.com");
+
+        Item item = new Item();
+        item.setId(1);
+        item.setName("Дрель");
+        item.setDescription("Дрель!");
+
+        Booking booking = new Booking();
+        booking.setId(1);
+        booking.setItemId(1);
+        booking.setBookingApproved("APPROVED");
+        booking.setStart(LocalDateTime.now().plusMonths(1));
+        booking.setEnd(LocalDateTime.now().plusMonths(2));
+        booking.setBooker(booker);
+        booking.setItem(item);
+
+        BookingDto bookingDto = BookingMapper.toBookingDto(booking);
+
+        Assertions.assertEquals(bookingDto.getItem().getClass(), ItemDto.class);
+        Assertions.assertEquals(bookingDto.getBooker().getClass(), UserDto.class);
+        Assertions.assertNotEquals("UserDto", bookingDto.getBooker().getClass().getName());
+
+    }
+
+    @Test
+    public void should_ReturnBookingItemDto() {
+
+        User booker = new User();
+        booker.setId(1);
+        booker.setName("Booker User");
+        booker.setEmail("test@example.com");
+
+        Item item = new Item();
+        item.setId(1);
+        item.setName("Дрель");
+        item.setDescription("Дрель!");
+
+        Booking booking = new Booking();
+        booking.setId(1);
+        booking.setBookingApproved("APPROVED");
+        booking.setStart(LocalDateTime.now().plusMonths(1));
+        booking.setEnd(LocalDateTime.now().plusMonths(2));
+        booking.setBooker(booker);
+        booking.setItem(item);
+
+        BookingItemDto bookingItemDto = BookingMapper.toBookingItemDto(booking);
+
+        Assertions.assertEquals(bookingItemDto.getItemId(), booking.getItem().getId());
+        Assertions.assertEquals(bookingItemDto.getBookerId(), booking.getBooker().getId());
 
     }
 

@@ -44,33 +44,36 @@ public class ItemRequestServiceUnitTest {
         User user = new User();
         user.setId(1);
 
-        ItemRequestDto itemRequest = new ItemRequestDto();
-        itemRequest.setId(1);
-        itemRequest.setDescription("Нужна дрель!");
-        itemRequest.setRequestorDto(new UserDto());
-        itemRequest.setCreated(LocalDateTime.now());
-        itemRequest.setRequestorId(1L);
+        ItemRequestDto itemRequestDto = new ItemRequestDto();
+        itemRequestDto.setId(1);
+        itemRequestDto.setDescription("Нужна дрель!");
+        itemRequestDto.setRequestorDto(new UserDto());
+        itemRequestDto.setCreated(LocalDateTime.now());
+        itemRequestDto.setRequestorId(1L);
 
         Item item = new Item();
         item.setName("Дрель-шуроповерт");
+        item.setRequestId(itemRequestDto.getId());
+
+        ItemRequest itemRequest = ItemRequestMapper.toItemRequest(itemRequestDto);
 
         Mockito
                 .when(userService.get(Mockito.anyLong()))
                 .thenReturn(new UserDto());
 
         Mockito
-                .when(itemRequestRepository.save(ItemRequestMapper.toItemRequest(itemRequest)))
-                .thenReturn(ItemRequestMapper.toItemRequest(itemRequest));
+                .when(itemRequestRepository.save(Mockito.any(ItemRequest.class)))
+                .thenReturn(itemRequest);
 
         Mockito
-                .when(itemRepository.getItemsByRequestId(Mockito.anyLong()))
+                .when(itemRepository.getItemsByRequestIdIn(List.of(itemRequest.getId())))
                 .thenReturn(List.of(item));
 
 
-        ItemRequestDto itemRequestDto = itemRequestService.create(itemRequest, 1L);
+        ItemRequestDto itemRequestDto2 = itemRequestService.create(itemRequestDto, 1L);
 
-        Assertions.assertEquals(item.getName(), itemRequestDto.getItems().get(0).getName());
-        Assertions.assertEquals(itemRequest.getDescription(), itemRequestDto.getDescription());
+        Assertions.assertEquals(item.getName(), itemRequestDto2.getItems().get(0).getName());
+        Assertions.assertEquals(itemRequest.getDescription(), itemRequestDto2.getDescription());
 
     }
 
@@ -92,9 +95,11 @@ public class ItemRequestServiceUnitTest {
 
         Item item1 = new Item();
         item1.setId(1);
+        item1.setRequestId(itemRequest1.getId());
 
         Item item2 = new Item();
         item2.setId(3);
+        item2.setRequestId(itemRequest2.getId());
 
         Mockito
                 .when(userService.get(Mockito.anyLong()))

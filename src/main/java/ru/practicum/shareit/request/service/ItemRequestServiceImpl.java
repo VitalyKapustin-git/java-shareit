@@ -19,7 +19,10 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
 
 @Service
 @AllArgsConstructor
@@ -38,16 +41,14 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         // Проверка, существует ли пользователь
         UserDto requestorDto = userService.get(requestorId);
+
         itemRequestDto.setRequestorId(requestorId);
         itemRequestDto.setRequestorDto(requestorDto);
 
         ItemRequest itemRequest = itemRequestRepository.save(ItemRequestMapper.toItemRequest(itemRequestDto));
 
         itemRequestDto.setId(itemRequest.getId());
-        itemRequestDto.setItems(itemRepository.getItemsByRequestId(itemRequestDto.getId()).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList())
-        );
+        setItemsToItemRequest(List.of(itemRequestDto));
 
         return itemRequestDto;
     }
@@ -117,19 +118,19 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     private void setItemsToItemRequest(List<ItemRequestDto> itemRequests) {
+
         List<Long> itemRequestsId = itemRequests.stream().map(ItemRequestDto::getId).collect(Collectors.toList());
 
-        List<ItemDto> items = itemRepository.getItemsByRequestIdIn(itemRequestsId).stream()
+        Map<Long, List<ItemDto>> requestsAndItems = itemRepository.getItemsByRequestIdIn(itemRequestsId).stream()
                 .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+                .collect(groupingBy(ItemDto::getRequestId));
 
-        itemRequests.forEach(v -> v.setItems(
-                        items.stream()
-                                .filter(i -> i.getRequestId() != null)
-                                .filter(i -> i.getRequestId() == v.getId())
-                                .collect(Collectors.toList())
-                )
-        );
+        itemRequests.forEach(itemRequest -> itemRequest.setItems(
+
+                requestsAndItems.get(itemRequest.getId()) != null ?
+                        requestsAndItems.get(itemRequest.getId()) : List.of()
+
+        ));
 
     }
 

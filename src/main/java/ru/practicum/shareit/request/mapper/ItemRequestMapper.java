@@ -10,6 +10,7 @@ public class ItemRequestMapper {
 
         ItemRequest itemRequest = new ItemRequest();
 
+        itemRequest.setId(itemRequestDto.getId());
         itemRequest.setDescription(itemRequestDto.getDescription());
         itemRequest.setCreated(itemRequestDto.getCreated());
         itemRequest.setRequestor(UserMapper.toUser(itemRequestDto.getRequestorDto()));
