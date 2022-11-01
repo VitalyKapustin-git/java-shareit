@@ -1,18 +1,18 @@
 package ru.practicum.shareit.booking.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-/**
- * TODO Sprint add-bookings.
- */
-
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "bookings")
 public class Booking {
 
@@ -28,11 +28,14 @@ public class Booking {
     @NotNull(message = "You must setup end date of booking")
     private LocalDateTime end;
 
-    @Column(name = "item_id")
+    @Transient
     private long itemId;
 
-    @Column(name = "booker_id")
-    private long bookerId;
+    @ManyToOne(cascade = CascadeType.ALL)
+    private User booker;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Item item;
 
     @Column(name = "approve_status")
     @JsonProperty(value = "status")

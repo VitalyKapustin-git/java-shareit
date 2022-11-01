@@ -15,11 +15,11 @@ public interface ItemService {
 
     ItemWithBookingDto get(long itemId, long userId);
 
-    List<ItemWithBookingDto> getAll(long userId);
+    List<ItemWithBookingDto> getAll(long userId, int from, int size);
 
     void remove(long itemId, long userId);
 
-    List<ItemDto> findByText(String text);
+    List<ItemDto> findByText(String text, int from, int size);
 
     CommentDto addComment(long itemId, long userId, Comment comment);
 
