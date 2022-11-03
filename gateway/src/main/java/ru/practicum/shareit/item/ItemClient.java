@@ -12,7 +12,6 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 @Service
