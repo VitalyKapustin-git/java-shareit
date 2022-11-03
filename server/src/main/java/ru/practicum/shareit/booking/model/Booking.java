@@ -7,6 +7,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,9 +21,11 @@ public class Booking {
     private long id;
 
     @Column(name = "start_date")
+    @NotNull(message = "You must setup start date of booking")
     private LocalDateTime start;
 
     @Column(name = "end_date")
+    @NotNull(message = "You must setup end date of booking")
     private LocalDateTime end;
 
     @Transient
