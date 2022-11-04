@@ -121,7 +121,7 @@ public class ItemServiceUnitTest {
         itemWithBookingDto.setName("check");
 
         Mockito
-                .when(itemRepository.getItemsByOwnerId(Mockito.anyLong(), Mockito.any(Pageable.class)))
+                .when(itemRepository.getItemsByOwnerIdOrderById(Mockito.anyLong(), Mockito.any(Pageable.class)))
                 .thenReturn(List.of(oldItem));
 
         Mockito

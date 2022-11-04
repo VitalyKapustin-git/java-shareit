@@ -140,7 +140,7 @@ public class ItemServiceImpl implements ItemService {
         Pageable pageable = PageRequest.of(from / size, size);
 
         List<ItemWithBookingDto> userItemsWithBooking = new ArrayList<>();
-        List<Item> userItems = itemRepository.getItemsByOwnerId(userId, pageable);
+        List<Item> userItems = itemRepository.getItemsByOwnerIdOrderById(userId, pageable);
 
         userItems.forEach(
                 x -> userItemsWithBooking.add(get(x.getId(), userId))
